@@ -1,0 +1,186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+<head>
+<title>XXX - S</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<script type="text/javascript" src="rabbisteg.js"></script>
+<script type="text/javascript">
+
+function handleFiles(files, destID, stegoMean) 
+{
+    for (var i = 0; i < files.length; i++) 
+    {
+        var file = files[i];
+        var imageType = 'image/*';
+
+        if (!file.type.match(imageType)) {
+            continue;
+        }
+
+        var img = document.getElementById(destID);
+        var reader = new FileReader();
+
+        reader.onload = (
+        function(aImg) 
+        { 
+            return function(e) 
+            { 
+                var ret = "";
+
+                aImg.src = e.target.result; 
+
+                if(stegoMean.match(/secret/)) 
+                    if((ret = importSecret(aImg)) != "")
+                        alert('error in load secret ' + ret);
+
+                if(stegoMean.match(/cover/))
+                    if((ret = importCover(aImg)) != "" )
+                        alert('error in load cover' + ret);
+            }; 
+        })(img);
+
+        img.src = reader.readAsDataURL(file);
+    }
+}
+
+function executeSubmit(fileindex, destID, stegoMean)
+{
+    var fileIDn = "image" + (fileindex).toString();
+    var fileUnder = document.getElementById(fileIDn).files[0];
+
+    if(fileUnder == null) {
+        alert(stegoMean + ": You have not specify the required file!");
+        return;
+    }
+
+    if (!fileUnder.type.match(/image.*/)) {
+        alert("This is not image!");
+        return;
+    }
+
+	var destImg = document.getElementById(destID);
+	var reader = new FileReader();
+
+    /* remind - aggiorna quella sopra */
+	reader.onload = function(e) 
+    { 
+        var ret = "";
+
+        destImg.src = e.target.result; 
+
+        if(stegoMean.match(/secret/)) 
+            if((ret = importSecret(destImg)) != "")
+                alert('error in load secret ' + ret);
+
+        if(stegoMean.match(/cover/))
+            if((ret = importCover(destImg)) != "" )
+                alert('error in load cover' + ret);
+    }; 
+
+    destImg.src = reader.readAsDataURL(fileUnder);
+}
+
+function importSecret(secretImgElem)
+{
+    window.rabbiSecr = new rabbiSteg();
+    window.rabbiSecr.init( "secret", 2);
+    return window.rabbiSecr.loadImage(secretImgElem, "canvas2_secret");
+}
+
+function importCover(coverImgElem)
+{
+    window.rabbiCover = new rabbiSteg();
+    window.rabbiCover.init ( "cover", 2);
+    return window.rabbiCover.loadImage(coverImgElem, "canvas1_cover");
+}
+
+function doStegano()
+{
+    var response = window.rabbiCover.willContain ( window.rabbiSecr );
+    if (response != true)
+        alert('error in checking space avalability: ' + response);
+    else
+        window.rabbiCover.steganography( "canvas3_steganoed", window.rabbiSecr );
+}
+
+function showInfo()
+{
+    var cleanSpan = document.getElementById("actual_info");
+    cleanSpan.innerHTML = '';
+
+    window.rabbiSecr.writeInfo("actual_info");
+    window.rabbiCover.writeInfo("actual_info");
+}
+
+</script>
+
+<link rel='stylesheet' href='rabbiusage.css' type='text/css'>
+
+</head>
+<body>
+
+<!-- THIS IS THE floating div -->
+<div class="standard">
+    <form action="" id="emptyform">
+        <span class="small_text">cover image:</span> <input type="file" id="image1" onchange="handleFiles(this.files, 'dest1', 'cover')">
+        <span class="small_text">secret image:</span> <input type="file" id="image2" onchange="handleFiles(this.files, 'dest2', 'secret')">
+        <input type="button" value="read files" onclick="executeSubmit(1, 'dest1', 'cover');executeSubmit(2, 'dest2', 'secret')">
+            <br> <br>
+        <span class="small_text" id="actual_info">No image loaded</span>
+            <br> <br>
+        <a href="#" onClick="doStegano()">do steganography</a>,
+        <a href="#" onClick="extractStegano()">extract secret image</a>, 
+        <a href="#" onClick="showInfo()">write image info</a>.
+    </form>
+</div>
+<!-- end of the floating div -->
+
+<div id="spaceDIV"></div>
+    <center>
+    <b>RabbiSteg - pixel driven steganography in pure javascript</b>
+    <br> <br> <br>
+    </center>
+<p class="explain_text">
+Steganography is the Art of hiding communication. A lot of steganography research has been done in the last years, but one of the usage issue in the Internet interactions was the laking of easy integrated stego software inside the communication client. IRC/IM has OTR, email has GnuPG, browser has HTTPS, but no integrations has been done aiming in a portable steganography. <br>
+Goal of this project, was write a steganography example class in pure javascript. HTML5 is required because implement the browser capatibility to read a local file and with canvas, is able to do pixel manipulation.<br><br>
+This software name "Rabbi" is a <a href="http://www.boingboing.net/2011/07/04/rip-len-sassaman-cyp.html">remind of the nickname used by one of the most prolific contributor</a> in privacy enhancing technology - <b>Len Sassaman</b> (aka "Rabbi", afaik) shall your memory bring us to the master key.
+</p>
+
+<p class="small_text" id="steganogen">
+</p>
+<p class="small_text">follow the loaded images: they require to be show at the original size to be mapped by browser</p>
+<div class="image_container">
+        <img src="" id="dest1">
+        <img src="" id="dest2">
+</div>
+
+<div>
+    <br>generated image:<br>
+    <canvas id="canvas3_steganoed" width="" height=""></canvas>
+</div>
+
+
+<div>
+    <br>extracted image:<br>
+    <canvas id="canvas4_extract" width="" height=""></canvas>
+</div>
+
+
+
+<br>
+below the zeroed canvas element:
+<br>
+
+<div class="zeroed">
+    <canvas id="canvas1_cover" width="" height=""></canvas>
+</div>
+<br>
+<div class="zeroed">
+    <canvas id="canvas2_secret" width="" height=""></canvas>
+</div>
+
+
+</body>
+</html>

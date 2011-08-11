@@ -1,0 +1,46 @@
+body {
+        font-family: Courier;
+}
+
+.image_container
+{
+
+    float: left;
+    border: #ddff11 solid 0.1em;
+    background-color: #ffff00;
+}
+
+.internal_image
+{
+    width: auto;
+    height: auto;
+}
+
+.explain_text
+{
+    border: #e0ccd2 solid 0.1em;
+    margin: 0.2em 3em 0.2em 3em;
+    padding: 0.5em 0.5em 0.5em 0.5em;
+    float: left;
+    font-size: 0.9em;
+}
+
+
+.small_text
+{
+    font-size: 0.7em;
+    font-family: Helvetica;
+}
+
+.standard
+{
+    position: fixed;
+    top: 1em;
+    left: 20%;
+    width: 60%;
+    text-align: center;
+    background-color: #e0fdd2;
+    border red solid 0.1em;
+    padding: 0.2em 0.2em 0.2em 0.2em;
+}
+#spaceDIV { padding: 4em; }
