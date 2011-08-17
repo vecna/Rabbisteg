@@ -43,4 +43,9 @@ body {
     border red solid 0.1em;
     padding: 0.2em 0.2em 0.2em 0.2em;
 }
-#spaceDIV { padding: 4em; }
+#hiddenSwap { display: none; }
+#spaceDiv { padding: 4em; }
+
+.hidden {
+    display: none;
+}
