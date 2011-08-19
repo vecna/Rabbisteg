@@ -28,3 +28,14 @@ provide a steganography library, easily integrable in every website. Will be in 
 3) abstract goal
 
 
+
+4) project mantenance
+
+The license of RabbiSteg is GPL v.3, and should be obtained in http://github.com/vecna/rabbisteg
+The license of the file canvas2image.js, taken by http://www.nihilogic.dk/labs/canvas2image/canvas2image.js, is MIT license
+The license of base64.js, taken by http://www.nihilogic.dk/labs/canvas2image/base64.js, is unlicensed free license.
+
+Actually rabbisteg has been developed only by Claudio Agosti - vecna@delirandom.net, and this software is used in the
+Winston Smith Project's server: http://www.winstonsmith.org/rabbisteg
+at the page http://www.delirandom.net/rabbisteg you should found all blog posts relative to Rabbisteg history, develop and update.
+
