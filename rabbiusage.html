@@ -6,40 +6,41 @@
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
 <script type="text/javascript" src="rabbisteg.js"></script>
+<script type="text/javascript" src="canvas2image.js"></script>
+<script type="text/javascript" src="base64.js"></script>
 <script type="text/javascript">
 
 function handleFiles(files, destID, stegoMean) 
 {
-    for (var i = 0; i < files.length; i++) 
+    for (var i = 0; i < files.length; i++)//per tutti i file da caricare
     {
-        var file = files[i];
-        var imageType = 'image/*';
+        var file = files[i];//ottengo il file in esame
+        var imageType = 'image/*';//tipi accettati
 
-        if (!file.type.match(imageType)) {
-            continue;
+        if (!file.type.match(imageType)) {//se il file non è un'immagine
+            continue;//passo al file successivo
         }
 
-        var img = document.getElementById(destID);
-        var reader = new FileReader();
+        var img = document.getElementById(destID);//ottengo l'elemento html dove inserire l'immagine
+        var reader = new FileReader();//creo l'oggetto per la lettura del file
 
-        reader.onload =  function(e) 
+        reader.onload =  function(e) //callback utilizzata quando carico leggo un file
         { 
             var ret = "";
 
-            img.src = e.target.result; 
+            img.src = e.target.result; //imposto l'immagine
 
-            if(stegoMean.match(/secret/)) 
-                if((ret = importSecret(img)) != "")
+            if(stegoMean.match(/secret/)) //se sto impostato l'immagine segreta
+                if((ret = importSecret(img)) != "")//inizializzo il l'oggetto per l'elaborazione dell'immagine
                     alert('error in load secret ' + ret);
 
-            if(stegoMean.match(/cover/))
-                if((ret = importCover(img)) != "" )
+            if(stegoMean.match(/cover/))//se sto analizzando l'immagine di copertura
+                if((ret = importCover(img)) != "" )//imposto la cover
                     alert('error in load cover' + ret);
         };
 
-        img.src = reader.readAsDataURL(file);
+        img.src = reader.readAsDataURL(file);//leggo il contenuto del file come url e imposto i dati letti come immagine
     }
-    showInfo();
 }
 
 function executeSubmit(fileindex, destID, stegoMean)
@@ -85,8 +86,6 @@ function executeSubmit(fileindex, destID, stegoMean)
     }; 
 
     destImg.src = reader.readAsDataURL(fileUnder);
-
-    showInfo();
 }
 
 function importSecret(secretImgElem)
@@ -98,18 +97,18 @@ function importSecret(secretImgElem)
 
 function importCover(coverImgElem)
 {
-    window.rabbiCover = new rabbiSteg();
-    window.rabbiCover.init ( "cover", 2);
-    return window.rabbiCover.loadImage(coverImgElem);
+    window.rabbiCover = new rabbiSteg();//creo un nuovo oggetto per la steganografia
+    window.rabbiCover.init ( "cover", 2);//imposto elemento cover
+    return window.rabbiCover.loadImage(coverImgElem);//carico immagine
 }
 
 function doStegano()
 {
-    var response = window.rabbiCover.imageSetup();
+    var response = window.rabbiCover.imageSetup("dest1");
     if (response != true)
         alert('error in setup cover image: ' + response);
 
-    reponse = window.rabbiSecr.imageSetup();
+    reponse = window.rabbiSecr.imageSetup("dest2");
     if (response != true)
         alert('error in setup secret image: ' + response);
 
@@ -120,16 +119,28 @@ function doStegano()
         window.rabbiCover.steganography( document.getElementById("canvas3_steganoed"), window.rabbiSecr );
 }
 
-function extractStegano()
+function extractStegano_local() /* local output usage - test only usage */
 {
-    var response = window.rabbiCover.imageSetup();
-    if (response != true)
-        alert('error in setup steganographic image: ' + response);
+    var response = window.rabbiCover.imageSetup("canvas3_steganoed");//imposto l'immagine
+    if (response != true)//se ho avuto un errore
+        alert('error in setup steganographic image: ' + response);//lo comunico
 
     if(window.rabbiCover == false)
         alert('secret image not selected nor generated');
 
-    window.rabbiCover.extractStegano( document.getElementById("canvas4_extract") );
+    window.rabbiCover.extractStegano( document.getElementById("canvas4_extract") );//estraggo i dati nel canvas specificato
+}
+
+function extractStegano() /* file - normal usage */
+{
+    var response = window.rabbiCover.imageSetup("dest1");//imposto l'immagine
+    if (response != true)//se ho avuto un errore
+        alert('error in setup steganographic image: ' + response);//lo comunico
+
+    if(window.rabbiCover == false)
+        alert('secret image not selected nor generated');
+
+    window.rabbiCover.extractStegano( document.getElementById("canvas4_extract") );//estraggo i dati nel canvas specificato
 }
 
 function showInfo()
@@ -155,6 +166,17 @@ function showfloatingDiv()
     target.innerHTML = source.innerHTML;
 }
 
+function saveImage()
+{
+    oCanvas=document.getElementById("canvas3_steganoed");  
+    ele=Canvas2Image.saveAsPNG(oCanvas, false /* true */ /* false make download, true return an obj */);
+    oCanvas.parentNode.replaceChild(ele, oCanvas);
+    alert(ele);
+}
+
+function uploadImage(){
+}
+
 </script>
 
 <link rel='stylesheet' href='rabbiusage.css' type='text/css'>
@@ -168,7 +190,7 @@ function showfloatingDiv()
         <br>JavaScript is required.
         <br><br>RabbiSteg is a JavaScript library: <a href="http://www.delirandom.net/rabbisteg">here explained</a>.<br>
     </noscript>
-</div>
+    </div>
 <!-- end of the floating div -->
 
 <!-- THIS IS THE floating div REAL CONTENT -->
@@ -181,10 +203,16 @@ function showfloatingDiv()
             <br> <br>
         <span class="small_text" id="actual_info">No image loaded</span>
             <br> <br>
-        <a href="#" onClick="showInfo();doStegano()">do steganography</a>,
-        <a href="#" onClick="showInfo();extractStegano()">extract secret image</a>, 
-        <a href="#" onClick="showInfo()">write image info</a>.
-    </form>
+        <a href="#" onClick="doStegano()">do steganography</a>,
+        <a href="#" onClick="extractStegano()">extract secret image (file)</a>, <br>
+        <a href="#" onClick="extractStegano_local()">extract secret image (local)</a>,
+        <a href="#" onClick="saveImage();">Salva L'immagine</a>
+        <a href="#" onClick="uploadImage();">Carica L'immagine su server</a>
+        </form>
+
+    <br><small><div id="debug1">UNO</div>
+    <div id="debug2">DUE</div> </small>
+
 </div>
 <!-- end of the floating div real container that will be pushed by javascript inside the <div id="floatingDiv" class="standard" -->
 
