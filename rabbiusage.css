@@ -32,19 +32,42 @@ body {
     font-family: Helvetica;
 }
 
-.standard
+.input_c
 {
+/*
     position: fixed;
-    top: 1em;
-    left: 20%;
-    width: 60%;
-    text-align: center;
+    top: 2%;
+    left: 5%;
+    width: 45%;
+    text-align: left;
+*/
     background-color: #e0fdd2;
     border red solid 0.1em;
     padding: 0.2em 0.2em 0.2em 0.2em;
 }
-#hiddenSwap { display: none; }
+
+.feature_c
+{
+/*
+    position: fixed;
+    top: 2%;
+    right: 5%;
+    width: 45%;
+    text-align: right;
+*/
+    background-color: #e0fdd2;
+    border red solid 0.1em;
+    padding: 0.2em 0.2em 0.2em 0.2em;
+}
+
+#hiddenSwap_feature { display: none; }
+#hiddenSwap_input { display: none; }
+#dynamicSecretImage { display: none; }
+#dynamicSecretText { display: none; }
 #spaceDiv { padding: 4em; }
+
+#linkImage { background-color: red; }
+#linkText { background-color: blue; }
 
 .hidden {
     display: none;

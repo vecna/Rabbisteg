@@ -2,7 +2,7 @@
 
 <html>
 <head>
-<title>XXX - S</title>
+<title>RabbiSteg - example usage page</title>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
 <script type="text/javascript" src="rabbisteg.js"></script>
@@ -31,11 +31,11 @@ function handleFiles(files, destID, stegoMean)
             img.src = e.target.result; //imposto l'immagine
 
             if(stegoMean.match(/secret/)) //se sto impostato l'immagine segreta
-                if((ret = importSecret(img)) != "")//inizializzo il l'oggetto per l'elaborazione dell'immagine
+                if((ret = importSecret(img, file.type)) != "")//inizializzo il l'oggetto per l'elaborazione dell'immagine
                     alert('error in load secret ' + ret);
 
             if(stegoMean.match(/cover/))//se sto analizzando l'immagine di copertura
-                if((ret = importCover(img)) != "" )//imposto la cover
+                if((ret = importCover(img, file.type)) != "" )//imposto la cover
                     alert('error in load cover' + ret);
         };
 
@@ -77,40 +77,61 @@ function executeSubmit(fileindex, destID, stegoMean)
         destImg.src = e.target.result; 
 
         if(stegoMean.match(/secret/)) 
-            if((ret = importSecret(destImg)) != "")
+            if((ret = importSecret(destImg, fileUnder.type)) != "")
                 alert('error in load secret ' + ret);
 
         if(stegoMean.match(/cover/))
-            if((ret = importCover(destImg)) != "" )
+            if((ret = importCover(destImg, fileUnder.type)) != "" )
                 alert('error in load cover' + ret);
     }; 
 
     destImg.src = reader.readAsDataURL(fileUnder);
 }
 
-function importSecret(secretImgElem)
+function importSecret(secretImgElem, imageType)
 {
     window.rabbiSecr = new rabbiSteg();
     window.rabbiSecr.init( "secret", 2);
+
+    if(window.rabbiSecr.setContentType(imageType) == false)
+        return false;
+
     return window.rabbiSecr.loadImage(secretImgElem);
 }
 
-function importCover(coverImgElem)
+function importCover(coverImgElem, imageType)
 {
     window.rabbiCover = new rabbiSteg();//creo un nuovo oggetto per la steganografia
     window.rabbiCover.init ( "cover", 2);//imposto elemento cover
+
+    if(window.rabbiCover.setContentType(imageType) == false)
+        return false;
+
     return window.rabbiCover.loadImage(coverImgElem);//carico immagine
 }
 
+/* this function need to check the source of the data and pass the appropriate content-type */
 function doStegano()
 {
     var response = window.rabbiCover.imageSetup("dest1");
     if (response != true)
         alert('error in setup cover image: ' + response);
 
-    reponse = window.rabbiSecr.imageSetup("dest2");
-    if (response != true)
-        alert('error in setup secret image: ' + response);
+    if(window.secretSource == 'dynamicSecretImage')
+    {
+        /* window.rabbiSecr has been yet initialized in importImage() */
+        reponse = window.rabbiSecr.imageSetup("dest2");
+        if (response != true)
+            alert('error in setup secret image: ' + response);
+    }
+    else /* window.secretSource == 'dynamicSecretText' */
+    {
+        /* in this case, window.rabbiSecr has not been yet initialized */
+        window.rabbiSecr = new rabbiSteg();
+        window.rabbiSecr.init( "secret", 2);
+        window.rabbiSecr.setContentType('text/plain');
+        window.rabbiSecr.textSetup('secret_input_text');
+    }
 
     response = window.rabbiCover.willContain ( window.rabbiSecr );
     if (response != true)
@@ -161,9 +182,27 @@ function showInfo()
  */
 function showfloatingDiv()
 {
-    var target = document.getElementById("floatingDiv");
-    var source = document.getElementById("hiddenSwap");
+    var target = document.getElementById("floatingDiv_input");
+    var source = document.getElementById("hiddenSwap_input");
     target.innerHTML = source.innerHTML;
+
+    target = document.getElementById("floatingDiv_feature");
+    source = document.getElementById("hiddenSwap_feature");
+    target.innerHTML = source.innerHTML;
+}
+
+function loadSecretCont(nameOfContainer)
+{
+    var target = document.getElementById("dynamicSecret");
+    var source = document.getElementById(nameOfContainer);
+    target.innerHTML = source.innerHTML;
+
+    window.secretSource = nameOfContainer;
+
+    target = document.getElementById("linkImage");
+    target.innerHTML = '';
+    target = document.getElementById("linkText");
+    target.innerHTML = '';
 }
 
 function saveImage()
@@ -184,21 +223,28 @@ function uploadImage(){
 </head>
 <body onload="showfloatingDiv()">
 
-<!-- THIS IS THE floating div CONTAINER -->
-<div id="floatingDiv" class="standard">
+<!-- THIS IS THE various floating div CONTAINER -->
+<div id="floatingDiv_input" class="input_c">
     <noscript>
         <br>JavaScript is required.
         <br><br>RabbiSteg is a JavaScript library: <a href="http://www.delirandom.net/rabbisteg">here explained</a>.<br>
     </noscript>
-    </div>
+</div>
+
+<div id="floatingDiv_feature" class="feature_c">
+    <noscript>
+        <br>JavaScript is required.
+        <br><br>RabbiSteg is a JavaScript library: <a href="http://www.delirandom.net/rabbisteg">here explained</a>.<br>
+    </noscript>
+</div>
 <!-- end of the floating div -->
 
-<!-- THIS IS THE floating div REAL CONTENT -->
-<div id="hiddenSwap">
-    <form action="" id="emptyform">
-        <span class="small_text">cover image (or rabbi output):</span> <input type="file" id="image1" onchange="handleFiles(this.files, 'dest1', 'cover')">
-        <span class="small_text">secret image:</span> <input type="file" id="image2" onchange="handleFiles(this.files, 'dest2', 'secret')">
-        <a href="#" onclick="executeSubmit(1, 'dest1', 'cover');executeSubmit(2, 'dest2', 'secret')">r</a>
+<!-- 
+    <a href="#" onclick="executeSubmit(1, 'dest1', 'cover');executeSubmit(2, 'dest2', 'secret')">r</a>
+-->
+
+<!-- THIS IS THE floating div INPUT MANAGEMENT REAL CONTENT -->
+<div id="hiddenSwap_input">
         <!-- <input type="button" value="read files" onclick="executeSubmit(1, 'dest1', 'cover');executeSubmit(2, 'dest2', 'secret')"> -->
             <br> <br>
         <span class="small_text" id="actual_info">No image loaded</span>
@@ -206,15 +252,42 @@ function uploadImage(){
         <a href="#" onClick="doStegano()">do steganography</a>,
         <a href="#" onClick="extractStegano()">extract secret image (file)</a>, <br>
         <a href="#" onClick="extractStegano_local()">extract secret image (local)</a>,
-        <a href="#" onClick="saveImage();">Salva L'immagine</a>
-        <a href="#" onClick="uploadImage();">Carica L'immagine su server</a>
-        </form>
+        <a href="#" onClick="saveImage()">save the image locally [bugged]</a>
+        <a href="#" onClick="uploadImage()">upload to the server [bugged]</a>
+        about these bugged feature, we need to understand if saving in .png cause some kind of data loss
 
     <br><small><div id="debug1">UNO</div>
     <div id="debug2">DUE</div> </small>
 
 </div>
-<!-- end of the floating div real container that will be pushed by javascript inside the <div id="floatingDiv" class="standard" -->
+<!-- end of the floating div real container that will be pushed by javascript inside the <div id="floatingDiv_input" -->
+
+<!-- THIS IS THE floating div applicable functions REAL CONTENT -->
+<div id="hiddenSwap_feature">
+    <form action="" id="emptyform">
+        <span class="small_text">steganographic container</span> <input type="file" id="image1" onchange="handleFiles(this.files, 'dest1', 'cover')">
+
+        <a id="linkImage" href="#" onClick="loadSecretCont('dynamicSecretImage')">hidden an image</a>
+        <a id="linkText" href="#" onClick="loadSecretCont('dynamicSecretText')">hidden a text</a>
+
+        <div id="dynamicSecret"></div> <!-- dynamicSecret -->
+     </form>
+</div>
+
+<!-- end of the floating div real container that will be pushed by javascript inside the <div id="floatingDiv_feature" -->
+
+<!-- XXX REMIND TODO XXX image2 -> secret_input_image and secret_input_text -->
+<!-- XXX REMIND TODO XXX image2 -> secret_input_image and secret_input_text -->
+
+<!-- two little innerHTML loaded dynamically -->
+<div id="dynamicSecretImage">
+    <span class="small_text">secret image:</span> <input type="file" id="secret_input_image" onchange="handleFiles(this.files, 'dest2', 'secret')">
+</div>
+
+<div id="dynamicSecretText">
+    <span class="small_text">secret text:</span> <br> <textarea id="secret_input_text" rows="30" cols="100%"></textarea>
+</div>
+<!-- ending of innerHTML -->
 
 <div id="spaceDiv"></div>
     <center>
@@ -224,10 +297,10 @@ function uploadImage(){
 <p class="explain_text">
 Steganography is the Art of hiding communication. A lot of steganography research has been done in the last years, but one of the usage issue in the Internet interactions was the laking of easy integrated stego software inside the communication client. IRC/IM has OTR, email has GnuPG, browser has HTTPS, but no integrations has been done aiming in a portable steganography. <br>
 Goal of this project, was write a steganography example class in pure javascript. HTML5 is required because implement the browser capatibility to read a local file and with canvas, is able to do pixel manipulation.<br><br>
-This software name "Rabbi" is a <a href="http://www.boingboing.net/2011/07/04/rip-len-sassaman-cyp.html">remind of the nickname used by one of the most prolific contributor</a> in privacy enhancing technology - <b>Len Sassaman</b> (aka "Rabbi"). Shall your memory bring us to the master key.
+This software name "Rabbi" is a <a href="http://www.boingboing.net/2011/07/04/rip-len-sassaman-cyp.html">remind of the nickname used by one of the most prolific contributor</a> in privacy enhancing technology - <b>Len Sassaman</b> (aka "Rabbi"). Shall your memory bring us to the Master key.
 </p>
 
-<noscript>It's required JavaScript for run RabbiSteg</noscript>
+<noscript>It's required JavaScript to use RabbiSteg</noscript>
 
 <p class="small_text" id="steganogen">
 </p>
@@ -248,12 +321,9 @@ This software name "Rabbi" is a <a href="http://www.boingboing.net/2011/07/04/ri
     <canvas id="canvas4_extract" width="" height=""></canvas>
 </div>
 
-
-
 <br>
 below the zeroed canvas element:
 <br>
-
 
 </body>
 </html>
