@@ -149,7 +149,7 @@ function extractStegano_local() /* local output usage - test only usage */
     if(window.rabbiCover == false)
         alert('secret image not selected nor generated');
 
-    window.rabbiCover.extractStegano( document.getElementById("canvas4_extract") );//estraggo i dati nel canvas specificato
+    window.rabbiCover.extractStegano( document.getElementById("canvas4_extract"), "text_output" );//estraggo i dati nel canvas specificato
 }
 
 function extractStegano() /* file - normal usage */
@@ -161,7 +161,7 @@ function extractStegano() /* file - normal usage */
     if(window.rabbiCover == false)
         alert('secret image not selected nor generated');
 
-    window.rabbiCover.extractStegano( document.getElementById("canvas4_extract") );//estraggo i dati nel canvas specificato
+    window.rabbiCover.extractStegano( document.getElementById("canvas4_extract"), "text_output" );//estraggo i dati nel canvas specificato
 }
 
 function showInfo()
@@ -319,6 +319,11 @@ This software name "Rabbi" is a <a href="http://www.boingboing.net/2011/07/04/ri
 <div>
     <br>extracted image:<br>
     <canvas id="canvas4_extract" width="" height=""></canvas>
+</div>
+
+<div>
+    <br>extracted text:<br>
+    <p id="text_output"></p>
 </div>
 
 <br>

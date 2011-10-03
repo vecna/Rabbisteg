@@ -13,14 +13,24 @@
  */
 
 const bitAbuse = 2
+
+/* need to be used random, with ranges or even|odd meanings */
+const CT_text = 290
+const CT_img = 533
+
+
+/*
+ * debug: commented are present some getElementById("debug1") and debug2, if you create
+ * two div, with those IDs, could be useful uncomment the debugs and see what's happen.
+ *
+ * this is not easy and immediate, because I really don't believe someone want to do that. :P
+ */
+
 function rabbiSteg()
 {
 
     /* an object will be of three different types: secret, cover, extract */
     this.type = '';
-
-    /* max content-type length */
-    this.MAXCT = 12;
 
     this.init = function ( typeString, amountOfInject ) 
     {
@@ -63,6 +73,17 @@ function rabbiSteg()
         }
 
         this.content_type = contentString;
+
+        if(contentString.match(/image.*/))
+            this.content_code = CT_img;
+        else if(contentString.match('text/plain'))
+            this.content_code = CT_text;
+        else
+        {
+            alert('unexpected content-type: image and text/plain the only acceptable (' + contentString +')');
+            return false;
+        }
+
         return true;
     }
 
@@ -76,7 +97,7 @@ function rabbiSteg()
             return false;
         }
 
-        this.availPixNumber = this.Text.length;
+        this.availPixNumber = (this.Text.length * 4);
         return true;
     }
 
@@ -97,6 +118,9 @@ function rabbiSteg()
 
 		this.pixImg = this.ctx.getImageData(0, 0, this.imgRef.width, this.imgRef.height);//ottengo i pixel dell'immagine
 
+        this.HTML_dump("debug1", this.pixImg.data, 10, "<br><b>init", "<br></b>");
+
+        this.prologue ("cover");//controllo che l'immagine si una cover 
         this.availPixNumber = (this.imgRef.width * this.imgRef.height * 4);//calcolo il numero di pixel che posso nascondere
         if(this.availPixNumber == 0)//se il numero è 0 l'immagine probabilmente non è valida
             return "unable to acquire correclty image with role " + this.type;//errore
@@ -114,27 +138,33 @@ function rabbiSteg()
     }
 
     /* follow the methods to be used in the Cover image */
-    this.willContain = function( injectable ) 
+    this.willContain = function( mayBeInjected ) 
     {
         this.prologue ("cover");
  
         /* if bitAbuse is 2, the avail pixed need to be almost (8 / 2) = 4 times gretar */
         var timeGreat = (8 / bitAbuse);
 
-        alert( this.availPixNumber + ' ' + injectable.availPixNumber + ' ' + bitAbuse + ' ' + (8 /  bitAbuse )  );
+        alert( this.availPixNumber + ' ' + mayBeInjected.availPixNumber + ' ' + bitAbuse + ' ' + (8 /  bitAbuse )  );
 
-        if( (this.availPixNumber) <= (injectable.availPixNumber * (8 / bitAbuse) ) )
+        if( (this.availPixNumber) <= (mayBeInjected.availPixNumber * (8 / bitAbuse) ) )
             return "Invalid: the cover image must be "+ timeGreat  +" greater than the secret image";
         else
             return true;
     }
 
     /* utility! */
-    this.stegoEmbed = function(sourceVal, toInjectVal, ndxPos)
+    this.stegoEmbed = function(sourceVal, toInjectVal, ndxPos, debug)
     {
+        if(debug)
+            document.getElementById("debug1").innerHTML += "<br>{src "+ sourceVal +"}inj "+toInjectVal+" ndxP "+ndxPos+"}";
+
         var andValue = (toInjectVal & this.mask[ndxPos]);
         var leastSign = (andValue >> (ndxPos * 2));
         sourceVal = ((sourceVal >> 2) << 2) + leastSign;
+
+        if(debug)
+            document.getElementById("debug1").innerHTML += " = "+sourceVal + '<br>';
 
         return sourceVal;
     }
@@ -159,21 +189,35 @@ function rabbiSteg()
 
     this.injectSeq = function( targetVal, start_ndx)
     {
-
         var bigp = Math.floor(targetVal / 256);
         var carry = (targetVal % 256);
 
-        this.pixImg.data[start_ndx + 0] = this.stegoEmbed(this.pixImg.data[start_ndx + 0], bigp, 0);
-        this.pixImg.data[start_ndx + 1] = this.stegoEmbed(this.pixImg.data[start_ndx + 1], bigp, 1);
-        this.pixImg.data[start_ndx + 2] = this.stegoEmbed(this.pixImg.data[start_ndx + 2], bigp, 2);
-        this.pixImg.data[start_ndx + 3] = this.stegoEmbed(this.pixImg.data[start_ndx + 3], bigp, 3);
+        this.pixImg.data[start_ndx + 0] = this.stegoEmbed(this.pixImg.data[start_ndx + 0], bigp, 0, false);
+        this.pixImg.data[start_ndx + 1] = this.stegoEmbed(this.pixImg.data[start_ndx + 1], bigp, 1, false);
+        this.pixImg.data[start_ndx + 2] = this.stegoEmbed(this.pixImg.data[start_ndx + 2], bigp, 2, false);
+        this.pixImg.data[start_ndx + 3] = this.stegoEmbed(this.pixImg.data[start_ndx + 3], bigp, 3, false);
 
         start_ndx += 4;
         
-        this.pixImg.data[start_ndx + 0] = this.stegoEmbed(this.pixImg.data[start_ndx + 0], carry, 0);
-        this.pixImg.data[start_ndx + 1] = this.stegoEmbed(this.pixImg.data[start_ndx + 1], carry, 1);
-        this.pixImg.data[start_ndx + 2] = this.stegoEmbed(this.pixImg.data[start_ndx + 2], carry, 2);
-        this.pixImg.data[start_ndx + 3] = this.stegoEmbed(this.pixImg.data[start_ndx + 3], carry, 3);
+        this.pixImg.data[start_ndx + 0] = this.stegoEmbed(this.pixImg.data[start_ndx + 0], carry, 0, false);
+        this.pixImg.data[start_ndx + 1] = this.stegoEmbed(this.pixImg.data[start_ndx + 1], carry, 1, false);
+        this.pixImg.data[start_ndx + 2] = this.stegoEmbed(this.pixImg.data[start_ndx + 2], carry, 2, false);
+        this.pixImg.data[start_ndx + 3] = this.stegoEmbed(this.pixImg.data[start_ndx + 3], carry, 3, false);
+    }
+
+    this.HTML_dump = function(ddiv, matrix, elems, startInfo, endInfo)
+    {
+        var index;
+        var dumpData = '';
+
+        for(index = 0; index < elems; index++)
+        {
+            dumpData += "[" + matrix[index] + "]";
+            if(!( (index + 1) % 4 ))
+                dumpData += " ";
+        }
+
+        document.getElementById(ddiv).innerHTML += startInfo + dumpData + endInfo;
     }
 
     /* this function need to be set as callback */
@@ -181,48 +225,14 @@ function rabbiSteg()
     {
         this.prologue ("cover");
 
+        /* this variable count the actual used data of the cover image */
         var j = 0;
 
-        var sI = 0;
-        document.getElementById("debug1").innerHTML += 
-                    "<br>start from {"+ this.pixImg.data[sI]+"}{"+this.pixImg.data[sI + 1]+"}{"+ 
-                                       this.pixImg.data[sI + 2]+"}{"+ this.pixImg.data[sI + 3]+"}{"+
-                                       this.pixImg.data[sI + 4]+"}{"+this.pixImg.data[sI + 5]+"}{"+
-                                       this.pixImg.data[sI + 6]+"}{"+this.pixImg.data[sI + 7]+"}{"+
-                                       this.pixImg.data[sI + 8]+"}{"+this.pixImg.data[sI + 9]+"}{"+
-                                       this.pixImg.data[sI + 10]+"}{"+this.pixImg.data[sI + 11]+"}{"+
-                                       this.pixImg.data[sI + 12]+"}{"+this.pixImg.data[sI + 13]+"}{"+
-                                       this.pixImg.data[sI + 14]+"}{"+this.pixImg.data[sI + 15]+"}{"+
-                                       this.pixImg.data[sI + 16]+"}{"+this.pixImg.data[sI + 17]+"}{"+
-                                       this.pixImg.data[sI + 18]+"}{"+this.pixImg.data[sI + 19]+"};<br>";
+        this.HTML_dump("debug1", this.pixImg.data, 20, "<br>before apply steganography", "<br>");
 
-        this.prologue ("cover");//controllo che l'immagine si una cover // has not to be "secret" ? 
-
-        var hiddenCT = '';
-
-        /* first: add content-type at the start of the image */
-        for(var i = 0 ; i < toEmbedS.MAXCT; i++)
-        {
-            var valueToHide;
-
-            if(i < toEmbedS.content_type.length)
-                valueToHide = toEmbedS.content_type.charAt(i);
-            else
-                valueToHide = ' ';
-
-            hiddenCT += valueToHide;
-
-            this.pixImg.data[j] = this.stegoEmbed(this.pixImg.data[j], valueToHide, 0);
-            j++;
-            this.pixImg.data[j] = this.stegoEmbed(this.pixImg.data[j], valueToHide, 1);
-            j++;
-            this.pixImg.data[j] = this.stegoEmbed(this.pixImg.data[j], valueToHide, 2);
-            j++;
-            this.pixImg.data[j] = this.stegoEmbed(this.pixImg.data[j], valueToHide, 3);
-            j++;
-
-            document.getElementById("debug1").innerHTML += "seq {"+ valueToHide +"]" + "at["+j+"]";
-        }
+        /* first: add the content type code */
+        this.injectSeq(toEmbedS.content_code, j);
+        j+=8;
 
         /* second: add metadata accroding to the content-type */
         var dynamicData;
@@ -231,7 +241,7 @@ function rabbiSteg()
             this.injectSeq(toEmbedS.Text.length, j);
             j += 8;
             dynamicData = toEmbedS.Text;
-            alert(' text steganography, length ' + toEmbedS.Text.length + ' content-type ' + hiddenCT);
+            alert(' text steganography, length ' + toEmbedS.Text.length + ' content-type ' + toEmbedS.content_code);
         }
         else
         {
@@ -241,7 +251,8 @@ function rabbiSteg()
             this.injectSeq(toEmbedS.imgRef.height, j);
             j += 8;
             dynamicData = toEmbedS.pixImg.data;
-            alert(' image steganography, width ' + toEmbedS.imgRef.width + ' height ' + toEmbedS.imgRef.height + ' content-type ' + hiddenCT);
+
+            alert(' image steganography, width ' + toEmbedS.imgRef.width + ' height ' + toEmbedS.imgRef.height + ' content-type ' + toEmbedS.content_code);
         }
        
         /* third, inject the data */ 
@@ -249,18 +260,9 @@ function rabbiSteg()
         {
             var valueToHide = dynamicData[i];
 
-            /* we're sure that: j < this.pixImg.data.length, checkd with willContain (remind: fixme need) */
-            this.pixImg.data[j] = this.stegoEmbed(this.pixImg.data[j], valueToHide, 0);
-            j++;
-
-            this.pixImg.data[j] = this.stegoEmbed(this.pixImg.data[j], valueToHide, 1);
-            j++;
-
-            this.pixImg.data[j] = this.stegoEmbed(this.pixImg.data[j], valueToHide, 2);
-            j++;
-
-            this.pixImg.data[j] = this.stegoEmbed(this.pixImg.data[j], valueToHide, 3);
-            j++;
+            /* due to utf-16 availablility, encoding text require a double space */
+            this.injectSeq(valueToHide.charCodeAt(0), j);
+            j+=8;
         }
 
         /* those are related to the output canvas, it's always an img the container */
@@ -269,101 +271,91 @@ function rabbiSteg()
 
         imageCnvsElem.getContext("2d").putImageData(this.pixImg, 0, 0);
 
-        document.getElementById("debug1").innerHTML += 
-                    "<br>obtain: {"+ this.pixImg.data[sI]+"}{"+this.pixImg.data[sI + 1]+"}{"+ 
-                                       this.pixImg.data[sI + 2]+"}{"+ this.pixImg.data[sI + 3]+"}{"+
-                                       this.pixImg.data[sI + 4]+"}{"+this.pixImg.data[sI + 5]+"}{"+
-                                       this.pixImg.data[sI + 6]+"}{"+this.pixImg.data[sI + 7]+"}{"+
-                                       this.pixImg.data[sI + 8]+"}{"+this.pixImg.data[sI + 9]+"}{"+
-                                       this.pixImg.data[sI + 10]+"}{"+this.pixImg.data[sI + 11]+"}{"+
-                                       this.pixImg.data[sI + 12]+"}{"+this.pixImg.data[sI + 13]+"}{"+
-                                       this.pixImg.data[sI + 14]+"}{"+this.pixImg.data[sI + 15]+"}{"+
-                                       this.pixImg.data[sI + 16]+"}{"+this.pixImg.data[sI + 17]+"}; ";
+        this.HTML_dump("debug1", this.pixImg.data, 20, "<br>after steg apply", "<br>");
     }
 
-    this.extractStegano = function( cnvsEdst )
+    this.composedExtraction = function(matrix, startndx)
+    {
+        var HighValue = this.extractValue( matrix[startndx], matrix[startndx + 1], 
+                                           matrix[startndx + 2], matrix[startndx + 3]);
+
+        startndx += 4;
+
+        var CarryValue = this.extractValue( matrix[startndx], matrix[startndx + 1], 
+                                            matrix[startndx + 2], matrix[startndx + 3]);
+        
+        return (HighValue * 256) + CarryValue;
+    }
+
+    this.extractStegano = function( dstCnvsElm, dstTxtElm )
     {
         var sI = 0;
 
-        document.getElementById("debug2").innerHTML += 
-                    "<br>extract from {"+ this.pixImg.data[sI]+"}{"+this.pixImg.data[sI + 1]+"}{"+ 
-                                       this.pixImg.data[sI + 2]+"}{"+ this.pixImg.data[sI + 3]+"}{"+
-                                       this.pixImg.data[sI + 4]+"}{"+this.pixImg.data[sI + 5]+"}{"+
-                                       this.pixImg.data[sI + 6]+"}{"+this.pixImg.data[sI + 7]+"}{"+
-                                       this.pixImg.data[sI + 8]+"}{"+this.pixImg.data[sI + 9]+"}{"+
-                                       this.pixImg.data[sI + 10]+"}{"+this.pixImg.data[sI + 11]+"}{"+
-                                       this.pixImg.data[sI + 12]+"}{"+this.pixImg.data[sI + 13]+"}{"+
-                                       this.pixImg.data[sI + 14]+"}{"+this.pixImg.data[sI + 15]+"}{"+
-                                       this.pixImg.data[sI + 16]+"}{"+this.pixImg.data[sI + 17]+"};<br>";
+        this.HTML_dump("debug2", this.pixImg.data, 20, "<br>extraction from", "<br>");
 
-        this.prologue ("cover");//controllo che l'immagine si una cover // has not to be "secret" ? 
+        this.prologue ("cover");//controllo che l'immagine si una cover 
 
-        /* initialization of canvas source object */
-        cnvsEdst.width=this.pixImg.width;
-        cnvsEdst.height=this.pixImg.height;
-
-        var aCanvasCtx = cnvsEdst.getContext('2d');
-        cnvsEdst.pixImg = aCanvasCtx.createImageData(cnvsEdst.width, cnvsEdst.height);
-
-        var extract_content_type = ''; 
         /* procede with the content-type extraction */
-        for(var i = 0; i < this.MAXCT; i++)
+        var ctExtract = this.composedExtraction(this.pixImg.data, sI);
+        sI += 8;
+
+        if(ctExtract == CT_text)
         {
-            var now = this.extractValue(this.pixImg.data[sI], this.pixImg.data[sI + 1], 
-                                        this.pixImg.data[sI + 2], this.pixImg.data[sI + 3]);
+            alert('extracting TEXT');
 
-            extract_content_type += now;
-            sI += 4;
+            /* extraction of the text size */
+            var textSize = this.composedExtraction(this.pixImg.data, sI);
+            sI += 8;
 
-            document.getElementById("debug2").innerHTML += " seq ["+ now +"] at[" + sI +"]";
+            var textExt = '';
+            for(var i = 0; i < textSize; i++)
+            {
+                var longValue = this.composedExtraction(this.pixImg.data, sI);
+                sI += 8;
 
+                textExt += String.fromCharCode(longValue);
+
+                document.getElementById("debug2").innerHTML += "<br>" + i + " = " + longValue + " =[" +  String.fromCharCode(longValue)
+ +"]";
+            }
+
+            document.getElementById(dstTxtElm).innerHTML += textExt;
         }
-        alert(extract_content_type);
-
-        return;
-
-		var destCtx = cnvsEdst.getContext('2d');//ottengo il contesto del canvas di destinazione
-
-		//calcolo larghezza dell'immagine nascosta
-        var bigW = this.extractValue(this.pixImg.data[sI], this.pixImg.data[sI + 1], 
-                                     this.pixImg.data[sI + 2], this.pixImg.data[sI + 3]);
-        sI += 4;
-        var carryW = this.extractValue(this.pixImg.data[sI], this.pixImg.data[sI + 1], 
-                                     this.pixImg.data[sI + 2], this.pixImg.data[sI + 3]);
-        sI += 4;
-        
-        //calcolo altezza dell'immagine nascosta
-        var bigH = this.extractValue(this.pixImg.data[sI], this.pixImg.data[sI + 1], 
-                                     this.pixImg.data[sI + 2], this.pixImg.data[sI + 3]);
-        sI += 4;
-        var carryH = this.extractValue(this.pixImg.data[sI], this.pixImg.data[sI + 1], 
-                                     this.pixImg.data[sI + 2], this.pixImg.data[sI + 3]);
-        sI += 4;
-
-/*
-        final computing 
-*/
-        cnvsEdst.width = (bigW * 256) + carryW;
-        cnvsEdst.height = (bigH * 256) + carryH;
-
-        alert('extracted H ' + cnvsEdst.height + ' from ' + bigH + 'x 256 & ' + carryH + 'extracted W ' + cnvsEdst.width + ' from ' + bigW + 'x 256 & ' + carryW);
-
-        /* will be strage that a cover image is used, in the same session as container and
-         * dest. I belive that software interfaces need to be less limited where possibile,
-         * because the next generations will perceive the Intertubes with eyes none ever had */
- 
-//        alert('extracted width/height: ' + cnvsEdst.width + ' e ' + cnvsEdst.height);
-
-        var aCanvasCtx = cnvsEdst.getContext('2d');
-        cnvsEdst.pixImg = aCanvasCtx.createImageData(cnvsEdst.width, cnvsEdst.height);
-
-        for(var i = 0; i < cnvsEdst.pixImg.data.length; i++)
+        else if(ctExtract == CT_img)
         {
-            cnvsEdst.pixImg.data[i] = this.extractValue(this.pixImg.data[sI], this.pixImg.data[sI + 1], 
-                                                        this.pixImg.data[sI + 2], this.pixImg.data[sI + 3]);
-            sI += 4;
-        }
+            /* initialization of canvas SOURCE object */
+            dstCnvsElm.width=this.pixImg.width;
+            dstCnvsElm.height=this.pixImg.height;
 
-        destCtx.putImageData(cnvsEdst.pixImg, 0, 0); 
+            var aCanvasCtx = dstCnvsElm.getContext('2d');
+            dstCnvsElm.pixImg = aCanvasCtx.createImageData(dstCnvsElm.width, dstCnvsElm.height);
+
+            var destCtx = dstCnvsElm.getContext('2d');//ottengo il contesto del canvas di destinazione
+
+            //calcolo larghezza dell'immagine nascosta
+            dstCnvsElm.width= this.composedExtraction(this.pixImg.data, sI);
+            sI += 8;
+            
+            //calcolo altezza dell'immagine nascosta
+            dstCnvsElm.height= this.composedExtraction(this.pixImg.data, sI);
+            sI += 8;
+
+            alert('extracting IMAGE, XY:' + dstCnvsElm.height + ' & ' + dstCnvsElm.width );
+
+            var aCanvasCtx = dstCnvsElm.getContext('2d');
+            dstCnvsElm.pixImg = aCanvasCtx.createImageData(dstCnvsElm.width, dstCnvsElm.height);
+
+            for(var i = 0; i < dstCnvsElm.pixImg.data.length; i++)
+            {
+                dstCnvsElm.pixImg.data[i] = this.extractValue(this.pixImg.data[sI], this.pixImg.data[sI + 1], 
+                                                            this.pixImg.data[sI + 2], this.pixImg.data[sI + 3]);
+                sI += 4;
+            }
+
+            destCtx.putImageData(dstCnvsElm.pixImg, 0, 0); 
+        }
+        else
+            alert(" Error! "+ ctExtract + " Invalid code");
+
     }
 }
