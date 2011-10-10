@@ -295,7 +295,6 @@ function rabbiSteg()
         {
             this.injectSeq(toEmbedS.Text.length, j);
             j += 8;
-            dynamicData = toEmbedS.Text;
             alert(' text steganography, length ' + toEmbedS.Text.length + ' content-type ' + toEmbedS.content_code);
         }
         else
@@ -311,13 +310,30 @@ function rabbiSteg()
         }
        
         /* third, inject the data */ 
-        for(var i = 0 ; i < dynamicData.length ; i++)
+        if(toEmbedS.content_type == 'text/plain')
         {
-            var valueToHide = dynamicData[i];
+            for(var i = 0 ; i < toEmbedS.Text.length ; i++)
+            {
+                var valueToHide = toEmbedS.Text[i];
 
-            /* due to utf-16 availablility, encoding text require a double space */
-            this.injectSeq(valueToHide.charCodeAt(0), j);
-            j+=8;
+                /* due to utf-16 availablility, encoding text require a double space */
+                this.injectSeq(valueToHide.charCodeAt(0), j);
+                j+=8;
+            }
+        } 
+        else
+        {
+            for(var i = 0 ; i < toEmbedS.pixImg.data.length ; i++)
+            {
+                var valueToHide = toEmbedS.pixImg.data[i];
+
+                this.injectSeq(valueToHide, j);
+                /* this could be modify in some way, optimizing the usage,
+                 * anyway, mod 3 bit in the first two colors in the pixMap,
+                 * could make less detectable (by eyes!) the steganography,
+                 * due to the kept good pixel every two */
+                j+=8;
+            }
         }
 
         /* those are related to the output canvas, it's always an img the container */
