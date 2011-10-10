@@ -18,6 +18,8 @@ const bitAbuse = 2
 const CT_text = 290
 const CT_img = 533
 
+const ALPHA_USAGE = 2
+const NOT_ALPHA_USAGE = 3
 
 /*
  * debug: commented are present some getElementById("debug1") and debug2, if you create
@@ -31,6 +33,7 @@ function rabbiSteg()
 
     /* an object will be of three different types: secret, cover, extract */
     this.type = '';
+    this.steganographyType = NOT_ALPHA_USAGE;
 
     this.init = function ( typeString, amountOfInject ) 
     {
@@ -45,9 +48,10 @@ function rabbiSteg()
         if(this.type == '')//se non ho imposto nessun tipo
             return "invalid type of usage sets in rabbiSteg: check the first args";//errore
 
-        /* generate the bitmasks - at the moment, only 2 is supported */
-	    this.mask = new Array( 3, 12, 48, 192, 15, 240, 3840, 61440 );
-        /* end of tmp debug mode */
+        /* generate the bitmasks */
+	    this.mask2bit = new Array( 3, 12, 48, 192 ); /* 15, 240, 3840, 61440 */
+	    this.mask3bit = new Array( 7, 56 );
+        /* http://www.neurophys.wisc.edu/comp/docs/ascii/ */
         
         return true;//tutto ok
     }
@@ -137,12 +141,12 @@ function rabbiSteg()
             alert('bad implementation of rabbiSteg class: called method for "' + required + '" in "' + this.type + '"'); 
     }
 
-    /* follow the methods to be used in the Cover image */
+    /* follow the methods to be used in the Cover image -- at the moment need serious update */
     this.willContain = function( mayBeInjected ) 
     {
         this.prologue ("cover");
  
-        /* if bitAbuse is 2, the avail pixed need to be almost (8 / 2) = 4 times gretar */
+        /* if bitAbuse is 2, the avail pixed need to be almost (8 / 2) = 4 times greter */
         var timeGreat = (8 / bitAbuse);
 
         alert( this.availPixNumber + ' ' + mayBeInjected.availPixNumber + ' ' + bitAbuse + ' ' + (8 /  bitAbuse )  );
@@ -153,15 +157,65 @@ function rabbiSteg()
             return true;
     }
 
+    /* this is the function wrapping the various kind of steganography, has been implemented when 
+     * the requirement of a non-alpha channel hiding has been requested by some test */
+    this.pixelBlockStego = function(matrixIndex, toHideVal, debug)
+    {
+        /* matrixIndex work in this.pixImg.data */
+
+        if(this.steganographyType == ALPHA_USAGE)
+        {
+            this.pixImg.data[matrixIndex + 0] = this.stegoEmbed4(this.pixImg.data[matrixIndex + 0], toHideVal, 0, debug);
+            this.pixImg.data[matrixIndex + 1] = this.stegoEmbed4(this.pixImg.data[matrixIndex + 1], toHideVal, 1, debug);
+            this.pixImg.data[matrixIndex + 2] = this.stegoEmbed4(this.pixImg.data[matrixIndex + 2], toHideVal, 2, debug);
+            this.pixImg.data[matrixIndex + 3] = this.stegoEmbed4(this.pixImg.data[matrixIndex + 3], toHideVal, 3, debug);
+        }
+        else /* NOT_ALPHA_USAGE */
+        {
+            this.pixImg.data[matrixIndex + 0] = this.stegoEmbed3(this.pixImg.data[matrixIndex + 0], toHideVal, 0, debug);
+            this.pixImg.data[matrixIndex + 1] = this.stegoEmbed3(this.pixImg.data[matrixIndex + 1], toHideVal, 1, debug);
+            this.pixImg.data[matrixIndex + 2] = this.stegoEmbed3(this.pixImg.data[matrixIndex + 2], toHideVal, 2, debug);
+            /* alpha channel untouched */
+        }
+    }
+
     /* utility! */
-    this.stegoEmbed = function(sourceVal, toInjectVal, ndxPos, debug)
+    this.stegoEmbed4 = function(sourceVal, toInjectVal, ndxPos, debug)
     {
         if(debug)
-            document.getElementById("debug1").innerHTML += "<br>{src "+ sourceVal +"}inj "+toInjectVal+" ndxP "+ndxPos+"}";
+            document.getElementById("debug1").innerHTML += "<br>2{src "+ sourceVal +"}inj "+toInjectVal+" ndxP "+ndxPos+"}";
 
-        var andValue = (toInjectVal & this.mask[ndxPos]);
+        var andValue = (toInjectVal & this.mask2bit[ndxPos]);
         var leastSign = (andValue >> (ndxPos * 2));
         sourceVal = ((sourceVal >> 2) << 2) + leastSign;
+
+        if(debug)
+            document.getElementById("debug1").innerHTML += " = "+sourceVal + '<br>';
+
+        return sourceVal;
+    }
+
+    this.stegoEmbed3 = function(sourceVal, toInjectVal, ndxPos, debug)
+    {
+
+        if(ndxPos == 0 || ndxPos == 1)
+        {
+            if(debug)
+                document.getElementById("debug1").innerHTML += "<br>3{src "+ sourceVal +"}inj "+toInjectVal+" ndxP "+ndxPos+"}";
+
+            var andValue = (toInjectVal & this.mask3bit[ndxPos]);
+            var leastSign = (andValue >> (ndxPos * 3));
+            sourceVal = ((sourceVal >> 3) << 3) + leastSign;
+        }
+        else
+        {
+            if(debug)
+                document.getElementById("debug1").innerHTML += "<br>2{src "+ sourceVal +"}inj "+toInjectVal+" ndxP "+ndxPos+"}";
+
+            var andValue = (toInjectVal & this.mask2bit[3]); /* in this case, ndxPos could be only "2" */
+            var leastSign = (andValue >> 6);
+            sourceVal = ((sourceVal >> 2) << 2) + leastSign;
+        }
 
         if(debug)
             document.getElementById("debug1").innerHTML += " = "+sourceVal + '<br>';
@@ -179,10 +233,19 @@ function rabbiSteg()
     {
         var retVal = 0;
 
-        retVal += (stegoV1 & this.mask[0]);
-        retVal += ((stegoV2 & this.mask[0]) << 2);
-        retVal += ((stegoV3 & this.mask[0]) << 4);
-        retVal += ((stegoV4 & this.mask[0]) << 6);
+        if(this.steganographyType == ALPHA_USAGE)
+        {
+            retVal += (stegoV1 & this.mask2bit[0]);
+            retVal += ((stegoV2 & this.mask2bit[0]) << 2);
+            retVal += ((stegoV3 & this.mask2bit[0]) << 4);
+            retVal += ((stegoV4 & this.mask2bit[0]) << 6);
+        }
+        else /* without alpha channel stegano, use the first 3 bits two time, and 2 bit after */
+        {
+            retVal += (stegoV1 & this.mask3bit[0]);
+            retVal += ((stegoV2 & this.mask3bit[0]) << 3);
+            retVal += ((stegoV3 & this.mask2bit[0]) << 6);
+        }
 
         return retVal;
     }
@@ -192,17 +255,9 @@ function rabbiSteg()
         var bigp = Math.floor(targetVal / 256);
         var carry = (targetVal % 256);
 
-        this.pixImg.data[start_ndx + 0] = this.stegoEmbed(this.pixImg.data[start_ndx + 0], bigp, 0, false);
-        this.pixImg.data[start_ndx + 1] = this.stegoEmbed(this.pixImg.data[start_ndx + 1], bigp, 1, false);
-        this.pixImg.data[start_ndx + 2] = this.stegoEmbed(this.pixImg.data[start_ndx + 2], bigp, 2, false);
-        this.pixImg.data[start_ndx + 3] = this.stegoEmbed(this.pixImg.data[start_ndx + 3], bigp, 3, false);
-
+        this.pixelBlockStego(start_ndx, bigp, false);
         start_ndx += 4;
-        
-        this.pixImg.data[start_ndx + 0] = this.stegoEmbed(this.pixImg.data[start_ndx + 0], carry, 0, false);
-        this.pixImg.data[start_ndx + 1] = this.stegoEmbed(this.pixImg.data[start_ndx + 1], carry, 1, false);
-        this.pixImg.data[start_ndx + 2] = this.stegoEmbed(this.pixImg.data[start_ndx + 2], carry, 2, false);
-        this.pixImg.data[start_ndx + 3] = this.stegoEmbed(this.pixImg.data[start_ndx + 3], carry, 3, false);
+        this.pixelBlockStego(start_ndx, carry, false);
     }
 
     this.HTML_dump = function(ddiv, matrix, elems, startInfo, endInfo)

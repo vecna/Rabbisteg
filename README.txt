@@ -57,6 +57,9 @@ The license of the file canvas2image.js:
 The license of base64.js:
     taken by http://www.nihilogic.dk/labs/canvas2image/base64.js, is unlicensed free license.
 
+The license of Reed Salomon error correction, retrivered and modified by:
+    http://www.its.caltech.edu/~cswchang/rscodec.html, is unlicensed.
+
 Actually rabbisteg has been developed only by Claudio Agosti - vecna@delirandom.net, and this 
 software is used in the Winston Smith Project's server: http://www.winstonsmith.org/rabbisteg
 at the page http://www.delirandom.net/rabbisteg you should found all blog posts relative to 
