@@ -124,7 +124,6 @@ function rabbiSteg()
 
         this.HTML_dump("debug1", this.pixImg.data, 10, "<br><b>init", "<br></b>");
 
-        this.prologue ("cover");//controllo che l'immagine si una cover 
         this.availPixNumber = (this.imgRef.width * this.imgRef.height * 4);//calcolo il numero di pixel che posso nascondere
         if(this.availPixNumber == 0)//se il numero è 0 l'immagine probabilmente non è valida
             return "unable to acquire correclty image with role " + this.type;//errore
@@ -147,11 +146,11 @@ function rabbiSteg()
         this.prologue ("cover");
  
         /* if bitAbuse is 2, the avail pixed need to be almost (8 / 2) = 4 times greter */
-        var timeGreat = (8 / bitAbuse);
+        var timeGreat = ((8 / bitAbuse) * 2);
 
-        alert( this.availPixNumber + ' ' + mayBeInjected.availPixNumber + ' ' + bitAbuse + ' ' + (8 /  bitAbuse )  );
+        alert( this.availPixNumber + ' ' + mayBeInjected.availPixNumber + ' ' + bitAbuse + ' ' + timeGreat );
 
-        if( (this.availPixNumber) <= (mayBeInjected.availPixNumber * (8 / bitAbuse) ) )
+        if( (this.availPixNumber) <= (mayBeInjected.availPixNumber * timeGreat ) )
             return "Invalid: the cover image must be "+ timeGreat  +" greater than the secret image";
         else
             return true;
@@ -229,12 +228,15 @@ function rabbiSteg()
         spid.innerHTML += "{type: " + this.type + " width: " + this.imgRef.width + " height: " + this.imgRef.height + "} ";
     }
 
-    this.extractValue = function(stegoV1, stegoV2, stegoV3, stegoV4)
+    this.extractValue = function(stegoV1, stegoV2, stegoV3, stegoV4, debug)
     {
         var retVal = 0;
 
         if(this.steganographyType == ALPHA_USAGE)
         {
+            if(debug)
+                document.getElementById("debug2").innerHTML += "<br>2 " + stegoV1 + "_" + stegoV2 + "_" +  stegoV3 + "_" +  stegoV4 + "=";
+
             retVal += (stegoV1 & this.mask2bit[0]);
             retVal += ((stegoV2 & this.mask2bit[0]) << 2);
             retVal += ((stegoV3 & this.mask2bit[0]) << 4);
@@ -242,10 +244,16 @@ function rabbiSteg()
         }
         else /* without alpha channel stegano, use the first 3 bits two time, and 2 bit after */
         {
+            if(debug)
+                document.getElementById("debug2").innerHTML += "<br>3 " + stegoV1 + "_" + stegoV2 + "_" +  stegoV3 + "_" +  stegoV4 + "=";
+
             retVal += (stegoV1 & this.mask3bit[0]);
             retVal += ((stegoV2 & this.mask3bit[0]) << 3);
             retVal += ((stegoV3 & this.mask2bit[0]) << 6);
         }
+
+        if(debug)
+            document.getElementById("debug2").innerHTML += retVal;
 
         return retVal;
     }
@@ -290,7 +298,6 @@ function rabbiSteg()
         j+=8;
 
         /* second: add metadata accroding to the content-type */
-        var dynamicData;
         if(toEmbedS.content_type == 'text/plain')
         {
             this.injectSeq(toEmbedS.Text.length, j);
@@ -304,9 +311,8 @@ function rabbiSteg()
 
             this.injectSeq(toEmbedS.imgRef.height, j);
             j += 8;
-            dynamicData = toEmbedS.pixImg.data;
 
-            alert(' image steganography, width ' + toEmbedS.imgRef.width + ' height ' + toEmbedS.imgRef.height + ' content-type ' + toEmbedS.content_code);
+            alert(' image steganography, width ' + toEmbedS.imgRef.width + ' height ' + toEmbedS.imgRef.height + ' content-type ' + toEmbedS.content_code + ' start at index ' + j);
         }
        
         /* third, inject the data */ 
@@ -345,15 +351,15 @@ function rabbiSteg()
         this.HTML_dump("debug1", this.pixImg.data, 20, "<br>after steg apply", "<br>");
     }
 
-    this.composedExtraction = function(matrix, startndx)
+    this.composedExtraction = function(matrix, startndx, debug)
     {
         var HighValue = this.extractValue( matrix[startndx], matrix[startndx + 1], 
-                                           matrix[startndx + 2], matrix[startndx + 3]);
+                                           matrix[startndx + 2], matrix[startndx + 3], debug);
 
         startndx += 4;
 
         var CarryValue = this.extractValue( matrix[startndx], matrix[startndx + 1], 
-                                            matrix[startndx + 2], matrix[startndx + 3]);
+                                            matrix[startndx + 2], matrix[startndx + 3], debug);
         
         return (HighValue * 256) + CarryValue;
     }
@@ -367,7 +373,7 @@ function rabbiSteg()
         this.prologue ("cover");//controllo che l'immagine si una cover 
 
         /* procede with the content-type extraction */
-        var ctExtract = this.composedExtraction(this.pixImg.data, sI);
+        var ctExtract = this.composedExtraction(this.pixImg.data, sI, true);
         sI += 8;
 
         if(ctExtract == CT_text)
@@ -375,13 +381,13 @@ function rabbiSteg()
             alert('extracting TEXT');
 
             /* extraction of the text size */
-            var textSize = this.composedExtraction(this.pixImg.data, sI);
+            var textSize = this.composedExtraction(this.pixImg.data, sI, true);
             sI += 8;
 
             var textExt = '';
             for(var i = 0; i < textSize; i++)
             {
-                var longValue = this.composedExtraction(this.pixImg.data, sI);
+                var longValue = this.composedExtraction(this.pixImg.data, sI, true);
                 sI += 8;
 
                 textExt += String.fromCharCode(longValue);
@@ -404,23 +410,28 @@ function rabbiSteg()
             var destCtx = dstCnvsElm.getContext('2d');//ottengo il contesto del canvas di destinazione
 
             //calcolo larghezza dell'immagine nascosta
-            dstCnvsElm.width= this.composedExtraction(this.pixImg.data, sI);
+            dstCnvsElm.width= this.composedExtraction(this.pixImg.data, sI, true);
             sI += 8;
             
             //calcolo altezza dell'immagine nascosta
-            dstCnvsElm.height= this.composedExtraction(this.pixImg.data, sI);
+            dstCnvsElm.height= this.composedExtraction(this.pixImg.data, sI, true);
             sI += 8;
 
-            alert('extracting IMAGE, XY:' + dstCnvsElm.height + ' & ' + dstCnvsElm.width );
+            alert('extracting IMAGE, XY:' + dstCnvsElm.height + ' & ' + dstCnvsElm.width + ' from index ' + sI);
 
             var aCanvasCtx = dstCnvsElm.getContext('2d');
             dstCnvsElm.pixImg = aCanvasCtx.createImageData(dstCnvsElm.width, dstCnvsElm.height);
 
             for(var i = 0; i < dstCnvsElm.pixImg.data.length; i++)
             {
+                /* *****
                 dstCnvsElm.pixImg.data[i] = this.extractValue(this.pixImg.data[sI], this.pixImg.data[sI + 1], 
-                                                            this.pixImg.data[sI + 2], this.pixImg.data[sI + 3]);
+                                                            this.pixImg.data[sI + 2], this.pixImg.data[sI + 3], false);
                 sI += 4;
+                ***** */
+
+                dstCnvsElm.pixImg.data[i] = this.composedExtraction(this.pixImg.data, sI, false);
+                sI += 8;
             }
 
             destCtx.putImageData(dstCnvsElm.pixImg, 0, 0); 
