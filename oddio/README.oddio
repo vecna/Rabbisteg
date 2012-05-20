@@ -1,0 +1,44 @@
+
+ODDIO is the inner project in stegoclick, stegoclick would be merged in 
+rabbisteg as a firefox plugin to apply steganography in the most present
+channel in the internet: the web.
+
+"oddio" contains software and analysis to obtain a reliable compression
+hidden communication channel based on the http GET sequence.
+
+Because this thing is more difficult to explain by written text, I may
+publish some short video about.
+
+This directory contain the files:
+
+README.oddio
+    me!
+    
+clean-generated.sh
+    utility to clean the generated file by the *-tree-generator.pt
+
+oddio-codec.php
+    classes to handle dynamic dictionary encoding, used for the first
+    implementation of the project, useful to complete analysis and research
+    before the implementation.
+
+oddio-test.php
+    test software, use the 'oddio/' directoy as web point (with my 
+    local webserver, http://127.0.0.1:8080/oddio point here)
+
+web-tree-generator.py
+    two scripts that generate a plausible web structure, used by
+    oddio-test for fetch, acquire, index, call, etc.
+
+
+contact: Claudio Agosti - vecna@delirandom.net
+
+pub   1024D/C6765430 2009-08-25 [expires: 2012-10-03]
+      Key fingerprint = 341F 1A8C E2B4 F4F4 174D  7C21 B842 093D C676 5430
+uid                  vecna (a Random GlobaLeks Developer) <vecna@globaleaks.org>
+uid                  vecna <vecna@s0ftpj.org>
+uid                  Claudio <vecna@sikurezza.org>
+uid                  vecna <vecna@delirandom.net>
+uid                  Planck's constant (6.626068) <vecna@winstonsmith.org>
+sub   3072g/E8157737 2009-08-25 [expires: 2012-10-03]
+
