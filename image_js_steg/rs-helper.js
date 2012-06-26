@@ -1,35 +1,34 @@
-<script type="text/javascript">
 
 function handleFiles(files, destID, stegoMean) 
 {
-    for (var i = 0; i < files.length; i++)//per tutti i file da caricare
+    for (var i = 0; i < files.length; i++)
     {
-        var file = files[i];//ottengo il file in esame
-        var imageType = 'image/*';//tipi accettati
+        var file = files[i];
+        var imageType = 'image/*';
 
-        if (!file.type.match(imageType)) {//se il file non è un'immagine
-            continue;//passo al file successivo
+        if (!file.type.match(imageType)) {
+            continue;
         }
 
-        var img = document.getElementById(destID);//ottengo l'elemento html dove inserire l'immagine
-        var reader = new FileReader();//creo l'oggetto per la lettura del file
+        var img = document.getElementById(destID);
+        var reader = new FileReader();
 
-        reader.onload =  function(e) //callback utilizzata quando carico leggo un file
+        reader.onload =  function(e) 
         { 
             var ret = "";
 
-            img.src = e.target.result; //imposto l'immagine
+            img.src = e.target.result; 
 
-            if(stegoMean.match(/secret/)) //se sto impostato l'immagine segreta
-                if((ret = importSecret(img, file.type)) != "")//inizializzo il l'oggetto per l'elaborazione dell'immagine
+            if(stegoMean.match(/secret/)) 
+                if((ret = importSecret(img, file.type)) != "")
                     alert('error in load secret ' + ret);
 
-            if(stegoMean.match(/cover/))//se sto analizzando l'immagine di copertura
-                if((ret = importCover(img, file.type)) != "" )//imposto la cover
+            if(stegoMean.match(/cover/))
+                if((ret = importCover(img, file.type)) != "" )
                     alert('error in load cover' + ret);
         };
 
-        img.src = reader.readAsDataURL(file);//leggo il contenuto del file come url e imposto i dati letti come immagine
+        img.src = reader.readAsDataURL(file);
     }
 }
 
@@ -81,7 +80,7 @@ function executeSubmit(fileindex, destID, stegoMean)
 function importSecret(secretImgElem, imageType)
 {
     window.rabbiSecr = new rabbiSteg();
-    window.rabbiSecr.init( "secret", 2);
+    window.rabbiSecr.init( "secret");
 
     if(window.rabbiSecr.setContentType(imageType) == false)
         return false;
@@ -91,13 +90,13 @@ function importSecret(secretImgElem, imageType)
 
 function importCover(coverImgElem, imageType)
 {
-    window.rabbiCover = new rabbiSteg();//creo un nuovo oggetto per la steganografia
-    window.rabbiCover.init ( "cover", 2);//imposto elemento cover
+    window.rabbiCover = new rabbiSteg();
+    window.rabbiCover.init ( "cover");
 
     if(window.rabbiCover.setContentType(imageType) == false)
         return false;
 
-    return window.rabbiCover.loadImage(coverImgElem);//carico immagine
+    return window.rabbiCover.loadImage(coverImgElem);
 }
 
 /* this function need to check the source of the data and pass the appropriate content-type */
@@ -118,7 +117,7 @@ function doStegano()
     {
         /* in this case, window.rabbiSecr has not been yet initialized */
         window.rabbiSecr = new rabbiSteg();
-        window.rabbiSecr.init( "secret", 2);
+        window.rabbiSecr.init( "secret");
         window.rabbiSecr.setContentType('text/plain');
         window.rabbiSecr.textSetup('secret_input_text');
     }
@@ -132,26 +131,26 @@ function doStegano()
 
 function extractStegano_local() /* local output usage - test only usage */
 {
-    var response = window.rabbiCover.imageSetup("canvas3_steganoed");//imposto l'immagine
-    if (response != true)//se ho avuto un errore
-        alert('error in setup steganographic image: ' + response);//lo comunico
+    var response = window.rabbiCover.imageSetup("canvas3_steganoed");
+    if (response != true)
+        alert('error in setup steganographic image: ' + response);
 
     if(window.rabbiCover == false)
         alert('secret image not selected nor generated');
 
-    window.rabbiCover.extractStegano( document.getElementById("canvas4_extract"), "text_output" );//estraggo i dati nel canvas specificato
+    window.rabbiCover.extractStegano( document.getElementById("canvas4_extract"), "text_output" );
 }
 
 function extractStegano() /* file - normal usage */
 {
-    var response = window.rabbiCover.imageSetup("dest1");//imposto l'immagine
-    if (response != true)//se ho avuto un errore
-        alert('error in setup steganographic image: ' + response);//lo comunico
+    var response = window.rabbiCover.imageSetup("dest1");
+    if (response != true)
+        alert('error in setup steganographic image: ' + response);
 
     if(window.rabbiCover == false)
         alert('secret image not selected nor generated');
 
-    window.rabbiCover.extractStegano( document.getElementById("canvas4_extract"), "text_output" );//estraggo i dati nel canvas specificato
+    window.rabbiCover.extractStegano( document.getElementById("canvas4_extract"), "text_output" );
 }
 
 function showInfo()
@@ -202,8 +201,3 @@ function saveImage()
     oCanvas.parentNode.replaceChild(ele, oCanvas);
     alert(ele);
 }
-
-function uploadImage(){
-}
-
-</script>

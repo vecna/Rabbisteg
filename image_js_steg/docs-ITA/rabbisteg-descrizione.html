@@ -1,0 +1,116 @@
+<html>
+    <head>
+        <title>Rabbisteg - descrizione d'uso della libreria</title>
+	<link rel='stylesheet' href='sniffjoke.css' type='text/css'>
+    </head>
+
+<body>
+
+<span class="input">This document is in italian, for english documentation, check: <a href="http://github.com/vecna/Rabbisteg">github/vecna/Rabbisteg</a>, contact [vecna at delirandom . net] - <a href="https://twitter.com/sniffjoke">@sniffjoke</a>.<br><br>
+
+<span class="titolo">Cos'&egrave rabbisteg</span>
+
+<div class="testo">
+E' un file javascript che contiene l'implementazione di una classe steganografica.<br>
+<b>Peculiarit&agrave;</b>: poich&eacute; &egrave; implementato in javascript, consente ad un client web di steganografare un'immagine (il segreto) all'interno di una pi&ugrave; grande (il contenitore).<br>
+</div>
+
+<span class="titolo">Come si usa (se sei un webmaster)</span>
+<div class="testo">
+Devi per prima cosa, includere il file <b>rabbisteg.js</b> ed altre utility necessarie:
+</div>
+<pre>
+	text/javascript" src="http://www.delirandom.net/rabbisteg-descrizione/rabbisteg.js"
+	text/javascript" src="http://www.delirandom.net/rabbisteg-descrizione/canvas2image.js"
+	text/javascript" src="http://www.delirandom.net/rabbisteg-descrizione/base64.js"
+
+	text/javascript" src="http://www.delirandom.net/rabbisteg-descrizione/rs-helper.js"
+</pre>
+<div class="testo">
+<br>
+<b>rabbisteg.js</b> contiene le classi steganografiche, il cuore del progetto e, ad eccezione di alcuni alert, non dovrebbe essere toccato.<br>
+il file <b>rs-helper.js</b> contiene invece le funzioni chiamabili dai file HTML, utili per gestire le immagini e le chiamate alla classe.<br>
+
+<h3>concetti di base di RabbiSteg</h3>
+<br>
+La steganografia &egrave; la tecnica con la quale, un'immagine diventa il contenitore di un altro dato, senza che all'occhio umano siano percepibili delle modifiche sostanziali.<br>
+Spiegando gossolanamente, l'alta definizione presente nelle immagini digitali permette di sacrificare alcuni dei bit meno significativi. Questi bit sono coloro che ospiteranno un dato, scelto dall'utente, e il processo di modifica non influenzer&agrave; l'immagine contenitore.
+<br>
+Questo file &egrave; composto da sezioni che spiegano come utilizzare il software, e degli esempi di utilizzo.
+<br><br>
+
+<h3>Documentazione - Classe RabbiSteg</h3>
+<a href="https://github.com/vecna/Rabbisteg/blob/master/image_js_steg/rabbisteg.js">link diretto al file</a>.
+</div>
+<pre>
+
+	rabbiSteg:	Classe definita
+	rabbiSteg.type	(secret | cover | extract ), acquista un valore quando la classe &egrave; sta
+ 			in una delle sue funzionalit&agrave; (definire il segreto, definire il contenitore,
+			o contenere il dato segreto estratto).
+	init  		parametri [ type ], quando viene creato l'oggetto, specifica la tipologia (vedi .type)
+			e inizializza le strutture dati interne. Questa chiamata E' NECESSARIA.
+			(nelle versioni precedenti, si poteva specificare la quantit&agrave; di bit sovrascrivibili
+			 dal processo steganografico. ora questo valore fisso &egrave; 2)
+	loadImage	parametri [ imageElemnt ]
+			Carica un'immagine, l'elemento imageElem viene da document.getElementBy*()
+			l'immagine caricata sar&agrave; quella elaborata dall'oggetto rabbiSteg.
+			un'immagine per ogni oggetto.
+	setContentType	parametro [ content-type ]
+			riceve il content-type del dato da nascondere, accetta solo immagini. In futuro
+			puo' essere espanso, accettando, nel caso di "secret", un testo.
+	imageSetup	parametro [ ID ] 
+			inizializza l'immagine, ricevendo come variabile, l'ID dell'elemento da importare.
+	willContain	parametro [ oggetto RabbiSteg di tipo secret ]
+			verifica se l'immagine di tipo "cover" &egrave; grande a sufficenza per includere
+			l'immagine segreta.
+	writeInfo	parametro [ ID di un elemento span, div o p ]
+			stampa linee di debug sulla pagina
+	stegnography	parametri [ canvasElement, ObjectSource ]
+			nasconde (steganografa) l'oggetto RabbiSteg "ObjectSource" all'interno di canvasElement.
+	extractStegano  parametri [ destinationCanvas, dstTxtElem ]
+			estrae dall'immagine caricata il dato steganofrafico. se viene trovato del testo
+			nascosto, viene messo nell'elemento dstTxtElem, se viene trovata un'immagine, viene 
+			riprodotta in destinationCanvas.
+
+</pre>
+
+<div class="testo">
+
+Non &egrave; prevista alcuna password, per impedire l'estrazione del materiale, pertanto un utente che ha un'immagine steganografata con questo sistema, puo' estrarre il contenuto nascosto senza alcune difficolt&agrave;
+<br>
+<br>
+Queste funzioni rappresentano il livello inferiore di interfaccia a RabbiSteg, l'ideale &egrave; modificare le funzioni di helper, definite nel file rs-helper.js
+<h3>Documentazione - funzioni d'aiuto implemntate in rs-helper.js</h3>
+<a href="https://github.com/vecna/Rabbisteg/blob/master/image_js_steg/rs-helper.js">link diretto al file</a>.<br>
+<a href="Rabbisteg/image_js_steg/rabbiusage.html">Esecuzione di prova (il css sbarella un poco, su Chrome o Safari)</a>.<br>
+Queste funzioni e queste pagine, possono essere usate come esempio per lo sviluppatore che volesse integrare Rabbisteg. Sconsiglio di usare queste funzioni, perch&egrave; estremamente prototipate sulla pagina di esempio.
+</div>
+<pre>
+	handleFiles	Funzion che gestisce file importati tramite un oggetto input.
+			si affida a FileReader, il meccanismo javascript che consente la lettura di file nel
+			browser prima che siano stati uploadati.
+			Ha degli argomenti, ma per essere compresi deve essere studiato il FileReader
+			(mi ero affidato alla documentazione mozilla)
+	executeSummit	parametri ( ID numerico, ID destinazione, ruolo )
+			ID numerico &egrave; un numero, 1 o 2 nell'esempio, necessario a identificare l'elemento
+			di input. ID destinazione deve essere di un elemento img, ruolo &egrave; una keyword
+			che puo' avere 3 valori (secret | cover | extract)
+			questa funzione viene eseguita dopo handleFiles
+	importSecret	funzione usata per creare l'oggetto di tipo secret, ed associargli l'immagine scelta
+	importCover	funzione usata per creare l'oggetto di tipo cover, ed associargli l'immagine scelta
+	doStegano	effettua le operazioni di steganografia, stampa l'immagine generata
+	extractStegano	estrae l'eventale immagine steganografata
+</pre>
+<div class="testo">
+
+<b>Problemi aperti</b>, in fase di integrazione, erano state uploadate le immagini in formato raw, senza passare per il salvataggio in PNG. Questo metodo si &egrave; rivelato utile per due motivi: Perch&egrave; l'ottimizazzione data da una conversione Canvas -> PNG avrebbe causato della perdita di informazione, sia perch&egrave; avendo letto i file con FileReader l'unico modo a noi noto, per uploadarli, era avviare una PUT ajax (consiglio di vedere <i>jQueryFileUploader</i>).<br>
+Questo &egrave; risolvibile se venisse usato l'algoritmo di error correction Deer Salomon, incluso nel pacchetto Rabbisteg, ma non implementato.<br>
+La visualizzazione delle immagini potenzialmene steganografate, deve essere effettuata ricevendo delle bitmap Canvas.<br><br>
+Non esistono prove ripetibili che possano confermare il danneggiamento dell'immagine, se salvata sotto forma di PNG, ma in linea teorica dovrebbe cos&igrave; avvenire.
+</div>
+
+</body>
+
+</html>
+

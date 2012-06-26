@@ -35,24 +35,24 @@ function rabbiSteg()
     this.type = '';
     this.steganographyType = NOT_ALPHA_USAGE;
 
-    this.init = function ( typeString, amountOfInject ) 
+    this.init = function ( typeString ) 
     {
-        var availType = new Array( "secret", "cover", "extract" );//tipo validi
+        var availType = new Array( "secret", "cover", "extract" );
 
         for( var i = 0; i < availType.length; i++)//per tutti i tipi
         {
-            if(typeString.match(availType[i]))//se il tipo passato come argomento è uguale all'i-esimo tipo valido
-                this.type = typeString;//imposto il tipo
+            if(typeString.match(availType[i]))
+                this.type = typeString;
         }
 
-        if(this.type == '')//se non ho imposto nessun tipo
+        if(this.type == '')
             return "invalid type of usage sets in rabbiSteg: check the first args";//errore
 
         /* generate the bitmasks */
-	    this.mask2bit = new Array( 3, 12, 48, 192 ); /* 15, 240, 3840, 61440 */
-	    this.mask3bit = new Array( 7, 56 );
+        this.mask2bit = new Array( 3, 12, 48, 192 ); /* 15, 240, 3840, 61440 */
+        this.mask3bit = new Array( 7, 56 );
         /* http://www.neurophys.wisc.edu/comp/docs/ascii/ */
-        
+
         return true;//tutto ok
     }
 
@@ -60,11 +60,11 @@ function rabbiSteg()
     this.loadImage = function( imageElem )
     {
         /* in the initialization method, import the image and grab them as canvas and pixmap */
-        if (!imageElem.src.match("image/*"))//se l'elemento non rappresenta un'immagine
-            return "This image don't seem to be an Image file";//errore
+        if (!imageElem.src.match("image/*"))
+            return "This image don't seem to be an Image file";
 
         /* this cause to inheriet original width and height */
-        this.src = imageElem.src;//ottengo i dati dell'immagine
+        this.src = imageElem.src;
 
         return "";
     }
@@ -112,21 +112,21 @@ function rabbiSteg()
         /* saving the reference image, just in case */
         this.imgRef = document.getElementById(stringId);
 
-		this.cnvs = document.createElement("canvas"); //creo un nuovo canvas
-        this.cnvs.width = this.imgRef.width;//imposto larghezza
-        this.cnvs.height = this.imgRef.height;//e altezza
+        this.cnvs = document.createElement("canvas"); 
+        this.cnvs.width = this.imgRef.width;
+        this.cnvs.height = this.imgRef.height;
 
-		this.ctx = this.cnvs.getContext('2d');//ottengo il contesto del canvas per poter operare sui dati dell'immagine
+        this.ctx = this.cnvs.getContext('2d');
 
-        this.ctx.drawImage(this.imgRef, 0, 0);//disegno l'immagine nel canvas di appoggio
+        this.ctx.drawImage(this.imgRef, 0, 0);
 
-		this.pixImg = this.ctx.getImageData(0, 0, this.imgRef.width, this.imgRef.height);//ottengo i pixel dell'immagine
+        this.pixImg = this.ctx.getImageData(0, 0, this.imgRef.width, this.imgRef.height);
 
         this.HTML_dump("debug1", this.pixImg.data, 10, "<br><b>init", "<br></b>");
 
-        this.availPixNumber = (this.imgRef.width * this.imgRef.height * 4);//calcolo il numero di pixel che posso nascondere
-        if(this.availPixNumber == 0)//se il numero è 0 l'immagine probabilmente non è valida
-            return "unable to acquire correclty image with role " + this.type;//errore
+        this.availPixNumber = (this.imgRef.width * this.imgRef.height * 4);
+        if(this.availPixNumber == 0)
+            return "unable to acquire correclty image with role " + this.type;
 
         return true;//tutto ok
     }
@@ -314,7 +314,7 @@ function rabbiSteg()
 
             alert(' image steganography, width ' + toEmbedS.imgRef.width + ' height ' + toEmbedS.imgRef.height + ' content-type ' + toEmbedS.content_code + ' start at index ' + j);
         }
-       
+
         /* third, inject the data */ 
         if(toEmbedS.content_type == 'text/plain')
         {
@@ -360,7 +360,7 @@ function rabbiSteg()
 
         var CarryValue = this.extractValue( matrix[startndx], matrix[startndx + 1], 
                                             matrix[startndx + 2], matrix[startndx + 3], debug);
-        
+
         return (HighValue * 256) + CarryValue;
     }
 
@@ -392,8 +392,7 @@ function rabbiSteg()
 
                 textExt += String.fromCharCode(longValue);
 
-                document.getElementById("debug2").innerHTML += "<br>" + i + " = " + longValue + " =[" +  String.fromCharCode(longValue)
- +"]";
+                document.getElementById("debug2").innerHTML += "<br>" + i + " = " + longValue + " =[" +  String.fromCharCode(longValue) +"]";
             }
 
             document.getElementById(dstTxtElm).innerHTML += textExt;
@@ -409,11 +408,9 @@ function rabbiSteg()
 
             var destCtx = dstCnvsElm.getContext('2d');//ottengo il contesto del canvas di destinazione
 
-            //calcolo larghezza dell'immagine nascosta
             dstCnvsElm.width= this.composedExtraction(this.pixImg.data, sI, true);
             sI += 8;
-            
-            //calcolo altezza dell'immagine nascosta
+
             dstCnvsElm.height= this.composedExtraction(this.pixImg.data, sI, true);
             sI += 8;
 

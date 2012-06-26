@@ -91,7 +91,7 @@ function executeSubmit(fileindex, destID, stegoMean)
 function importSecret(secretImgElem, imageType)
 {
     window.rabbiSecr = new rabbiSteg();
-    window.rabbiSecr.init( "secret", 2);
+    window.rabbiSecr.init( "secret" );
 
     if(window.rabbiSecr.setContentType(imageType) == false)
         return false;
@@ -102,7 +102,7 @@ function importSecret(secretImgElem, imageType)
 function importCover(coverImgElem, imageType)
 {
     window.rabbiCover = new rabbiSteg();//creo un nuovo oggetto per la steganografia
-    window.rabbiCover.init ( "cover", 2);//imposto elemento cover
+    window.rabbiCover.init ( "cover" );//imposto elemento cover
 
     if(window.rabbiCover.setContentType(imageType) == false)
         return false;
@@ -128,7 +128,7 @@ function doStegano()
     {
         /* in this case, window.rabbiSecr has not been yet initialized */
         window.rabbiSecr = new rabbiSteg();
-        window.rabbiSecr.init( "secret", 2);
+        window.rabbiSecr.init( "secret");
         window.rabbiSecr.setContentType('text/plain');
         window.rabbiSecr.textSetup('secret_input_text');
     }
