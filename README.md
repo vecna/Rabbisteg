@@ -8,7 +8,7 @@ Steganography: The art of the hidden writing.
 
 ### sub projects
 
-image_js_steg/
+imajsteg/
 
     javascript performing image steganography, using FileReader and a LSB substitution with
     canvas. Not secure, but a nice starting point to hack.
