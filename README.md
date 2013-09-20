@@ -1,6 +1,6 @@
 ## RabbiSteg
 
-Package, study and research in developing a suite of steganography tool usable by web browser.
+### Study and research in developing a suite of steganography [1] tool usable by web browser.
 
 Steganography: The art of the hidden writing. 
 
@@ -8,13 +8,22 @@ Steganography: The art of the hidden writing.
 
 ### sub projects
 
-imajsteg/
+**imajsteg/**
 
     javascript performing image steganography, using FileReader and a LSB substitution with
     canvas. Not secure, but a nice starting point to hack.
 
-oddio/
+**oddio/**
 
     steganography over click: send information in a remote web server, simply simulating 
     an user who's navigating into. 
-    (contain an interestig concept of: dynamic recurisive dictionary")
+
+**caspercode/**
+
+    new study and research on steganography over click, using python-graph library
+
+**elettrjs/**
+
+    this is not a steganography project, it's a porting of the techniques of denyable 
+    encryption explained here: 
+
