@@ -18,3 +18,8 @@ oddio/
     steganography over click: send information in a remote web server, simply simulating 
     an user who's navigating into. 
     (contain an interestig concept of: dynamic recurisive dictionary")
+
+A/
+
+    phantomjs implementation of 'oddio', because we're in the fucking 2014 and I've not yet
+    relased something useful
