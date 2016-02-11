@@ -1,0 +1,18 @@
+
+domain, message = from user input
+
+this is a promise
+  do the first fetch of domain
+  do the second
+  do the third
+  do the fourth
+  do the dynamicdict
+
+communication_map = compute(dynamicdict, message)
+
+this is a promise
+  do all the connection planned
+
+everybody win!
+
+🌟
