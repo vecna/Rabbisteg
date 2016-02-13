@@ -33,3 +33,9 @@ Steganography: The art of the hidden writing.
     this is not a steganography project, it's a porting of the techniques of denyable 
     encryption explained here: 
 
+    (contain an interestig concept of: dynamic recurisive dictionary")
+
+A/
+
+    phantomjs implementation of 'oddio', because we're in the fucking 2014 and I've not yet
+    relased something useful

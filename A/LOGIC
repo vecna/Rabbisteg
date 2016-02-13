@@ -1,0 +1,28 @@
+## Components
+
+  * **1**: fetch a page, be in control of refered and User Agent.
+  * **2**: manage the data fetch in a simple univoque way, usable also by the server
+
+
+### Solution 1:
+
+lib/requestor.py, class Requestor, usage:
+
+  * Requestor(url)
+  * Requestor.browerLikeBehavior() - non blocking
+  * status - return a status of the ongoing thread and http requests
+  * linkStructure - return the rabbiblock for the page
+
+
+### Solution 2:
+
+lib/rabbiblocks.py, Class Rabbiblocks
+
+Rules: 
+  * Every rabbiblock is identify by a source page, every source page has a different RB
+  * a RB is a list of dictionaries, dict contain:
+    * "referer" (the source page)
+    * "href" (the destination page)
+    * "hash" an hash of source+dest
+
+  * The class keep a simple "status", that switch based on a simple algorithm 
