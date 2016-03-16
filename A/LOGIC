@@ -4,7 +4,7 @@
   * **2**: manage the data fetch in a simple univoque way, usable also by the server
 
 
-### Solution 1:
+### Implementation of the above point 1:
 
 lib/requestor.py, class Requestor, usage:
 
@@ -14,9 +14,9 @@ lib/requestor.py, class Requestor, usage:
   * linkStructure - return the rabbiblock for the page
 
 
-### Solution 2:
+### Implementation of the above point 2:
 
-lib/rabbiblocks.py, Class Rabbiblocks
+lib/rabbiblocks.py, Class Blocks
 
 Rules: 
   * Every rabbiblock is identify by a source page, every source page has a different RB
