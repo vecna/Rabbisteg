@@ -8,6 +8,11 @@ import pdb, pprint
 from HTMLParser import HTMLParser
 import urlparse
 import requests
+from termcolor import colored
+
+def debug(text, funct, argument):
+    print colored(text, "red")
+    funct(argument)
 
 def unique(items):
     seen = set()
@@ -49,7 +54,7 @@ class InclusionParser(HTMLParser):
             self.pagebase = ''
             self.parsedurls = []
 
-        print "INcusion", tag, "+", attrs
+        print "Inclusion", tag, "+", attrs
         if tag == 'a':
             href = [v for k, v in attrs if k=='href']
             if href:
@@ -70,35 +75,39 @@ class InclusionParser(HTMLParser):
 ####
 
 def do_request(url):
-    a = requests.get(url)
-    pprint.pprint(a)
-    pdb.set_trace()
-    return a
-
+    try:
+        a = requests.get(url)
+    except EX:
+        print "pushd ../caspercode/fakeweb/"
+        print "python -m SimpleHTTPServer"
+        raise EX
+    print "Content-Type:", a.headers['content-type']
+    return a.text
 
 def fetch(url, options={}):
     print "fetch", url
     MultithreadFetcher(url).start()
 
+def parse_response(html, url):
+
+    parser = HrefParser()
+    parser.feed(html)
+    parser.cleanparsed(url)
+    retval = (parser.parsedurls, parser.pagebase)
+    parser.close()
+    return retval
 
 class MultithreadFetcher(threading.Thread):
 
     def __init__(self, url):
         self.url = url
-        print "costrutt"
+        print "Thread contructor"
         threading.Thread.__init__(self)
 
     def run(self):
-
         print "do_re"
         self.response = do_request(self.url)
 
-        parser = HrefParser()
-        parser.feed(self.response)
-        parser.cleanparsed(self.url)
-        retblock = (parser.parsedurls, parser.pagebase)
-        parser.close()
+        retblock = parse_response(self.response)
 
-        pprint.pprint(retblock)
-
-
+        debug("And the retblock is", pprint.pprint, retblock)
