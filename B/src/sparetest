@@ -1,0 +1,14 @@
+#!/usr/bin/env node
+
+/*
+var lib1 = require('./level1'),
+    t1 = lib1.fetchAndParse('http://www.valigiablu.it', 1),
+    t2 = lib1.fetchAndParse('http://www.valigiablu.it/crisi-migranti-europa-bbc/', 2),
+    t3 = lib1.fetchAndParse('http://www.valigiablu.it/referendum-trivelle/', 3);
+*/
+
+var lib2 = require('./level2'),
+    s1 = lib2.handShake('http://www.ilpost.it'),
+    s2 = lib2.transmit(s1, "500 grammi di farina 00, 350 di burro, 1 uovo ed 1 tuorlo, 190 di zucchero. 180° per 20 minuti. Ecco del sano unicode: Ω .");
+
+
