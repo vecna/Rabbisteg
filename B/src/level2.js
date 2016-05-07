@@ -41,6 +41,9 @@ var nextStep = function(state, stepNumber) {
     debug("Performing step %d of handshake, over %d elements", 
         stepNumber, _.size(state.links));
 
+    if(_.size(state.links) === 0)
+        throw new Error("lacking of state, nextStep impossible");
+
     var nextUrl = state.links[stepNumber].href;
 
     return level1
@@ -60,8 +63,8 @@ var handShake = function(site) {
    
     debug("Initializing handShake with %s", site);
 
-    var initStatus = level1
-        .fetchAndParse(site, 1)
+    return level1
+        .fetchAndParse(site, null, 1)
         .then(function(fetchResult) {
             /* !== 200 => throw new Error */
             return appendState({ fetched: [], links: [] }, fetchResult);
@@ -84,8 +87,9 @@ var handShake = function(site) {
 };
 
 var transmit = function(state, message) {
-    
-    var steganoMap = computeSteganoMap(state, message);
+   
+    process.exit(0);
+    var steganoMap = level1.computeSteganoMap(state, message);
 
     return new Promise.all(steganoMap)
         .then(function(results) {

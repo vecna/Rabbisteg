@@ -1,3 +1,4 @@
 *.pyc
 B/node_modules/*
 .idea/
+B/src/logs/*

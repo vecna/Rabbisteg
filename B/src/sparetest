@@ -1,14 +1,56 @@
 #!/usr/bin/env node
+var Promise = require('bluebird'),
+    debug = require('debug')('TEST'),
+    lib1 = require('./level1'),
+    lib2 = require('./level2');
 
+var testHandShake = function() {
+
+
+    return lib2
+        .handShake('http://localhost:8000')
+        .tap(function(result) {
+            console.log("The state is here");
+        });
 /*
-var lib1 = require('./level1'),
-    t1 = lib1.fetchAndParse('http://www.valigiablu.it', 1),
-    t2 = lib1.fetchAndParse('http://www.valigiablu.it/crisi-migranti-europa-bbc/', 2),
-    t3 = lib1.fetchAndParse('http://www.valigiablu.it/referendum-trivelle/', 3);
+     result = lib2.transmit(
+              state, 
+              "500 grammi di farina 00, 350 di burro, 1 uovo ed 1 tuorlo, 190 di zucchero. 180° per 20 minuti. Ecco del sano unicode: Ω ."
+              );
+
+        return(result);
+    })
+    .tap(function(r) {
+        console.log("Done/Test!");
+    })
+    .delay(1000)
+    .tap(function() {
+        console.log("End!");
+    });
 */
 
-var lib2 = require('./level2'),
-    s1 = lib2.handShake('http://www.ilpost.it'),
-    s2 = lib2.transmit(s1, "500 grammi di farina 00, 350 di burro, 1 uovo ed 1 tuorlo, 190 di zucchero. 180° per 20 minuti. Ecco del sano unicode: Ω .");
+};
 
+var testFetch = function() {
+
+    var t1 = lib1.fetchAndParse('http://www.valigiablu.it', 1),
+        t2 = lib1.fetchAndParse('http://www.valigiablu.it/crisi-migranti-europa-bbc/', 2),
+        t3 = lib1.fetchAndParse('http://www.valigiablu.it/referendum-trivelle/', 3);
+
+};
+
+var testHref = function() {
+
+    var a = lib1.assemblyHref('https://localhost:8000/i/x.html', 'f/o.html'),
+        b = lib1.assemblyHref('http://m.go', 'http://m.go/aaa.html'),
+        c = lib1.assemblyHref('https://localhost/i/1.html', '/o/p.html');
+
+    debug("relative: %s", a);
+    debug("absolute: %s", b);
+    debug("rooted: %s", c);
+};
+
+// testHref();
+// testFetch();
+testHandShake();
 
