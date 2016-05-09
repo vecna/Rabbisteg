@@ -12,18 +12,22 @@ var functionVerbose = function(funcName, parameters, result) {
 
     var parmstring = _.reduce(parameters, function(memo, v, k) {
         memo += "  " + k +": " + v + "\n";
+        return memo;
     }, ""),
         savedcontent = "====" + "\n",
         fname = 'logs/' + funcName + '.json';
 
-    if (typeof(result) !== 'string') 
-        throw new Error("result in 'functionVerbose' has to be a 'str'");
+    if (typeof(result) !== 'object') 
+        throw new Error("result in 'functionVerbose' has to be a 'object'");
 
     debug("Appending verbose log in %s", fname);
     return fs
         .appendFileAsync(fname, 
-            savedcontent + parmstring + result + "\n"
-        );
+            "α\n" + 
+            JSON.stringify({
+                parameters: parameters,
+                result: result,
+            }, undefined, 2) + "\nω");
 };
 
 var fetchAndParse = function(url, referer, step) {
@@ -68,7 +72,7 @@ var fetchAndParse = function(url, referer, step) {
             return process.env.VERBOSE && functionVerbose(
                  'fetchAndParse',
                 {url: url, referer: referer, step: step},
-                 JSON.stringify(retVal, undefined, 2)
+                 retVal
             );
         })
         .return(retVal);
@@ -84,7 +88,7 @@ var linkIdHash = function(referer, href) {
 
 /* TODO check is the same domain or just return null */
 var assemblyHref = function(url, href) {
-    debug("assemblyHref %s + %s (%s)", url, href, hrefType(href) );
+    // debug("assemblyHref %s + %s (%s)", url, href, hrefType(href) );
     if (_.startsWith(href, '#'))
         return null;
     switch(hrefType(href)) {
@@ -113,15 +117,46 @@ var assemblyHref = function(url, href) {
 };
 
 var computeSteganoMap = function(state, message) {
-    
-    debug("I've to compute on a state of %d links combo, %d bytes",
-        _.size(state.links), _.size(message) );
-    /* TODO https://nodejs.org/dist/latest/docs/api/zlib.html */
+ 
+    var clicks = [],
+        partialmsg = message,
+        when = null,
+        seq = 0;
 
-    process.exit(0);
+    /* TODO https://nodejs.org/dist/latest/docs/api/zlib.html */
+    debug("computeSteganoMap state %d links, msg %d bytes",
+        _.size(state.links), _.size(message) );
+
+    debugger;
+    for(seq = 0; seq < _.size(message); seq += 1) {
+        var C = message.charCodeAt(seq),
+            elem,
+            stateL = _.size(state.links);
+
+        /* usa bits_expressed al posto di .charCodeAt */
+        debugger;
+        if (C > stateL) {
+            elem = state.links[(C % stateL)];
+        } else {
+            elem = state.links[C];
+        }
+
+        clickInfo = _.pick(elem, ['referer', 'href' ]);
+        clickInfo.when = _.random(0,30);
+
+        clicks.push(waitAndFetch(clickInfo));
+    }
+    debug("Complted iteration over the message");
+    return clicks;
+};
+
+var waitAndFetch = function(clickInfo) {
+    debug("waitAndF %j", clickInfo);
+    return fetchAndParse(clickInfo.href, clickInfo.referer, clickInfo.step);
 };
 
 module.exports = {
+    waitAndFetch: waitAndFetch,
     fetchAndParse: fetchAndParse,
     linkIdHash: linkIdHash,
     assemblyHref: assemblyHref,

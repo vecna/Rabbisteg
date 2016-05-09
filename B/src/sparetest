@@ -6,29 +6,21 @@ var Promise = require('bluebird'),
 
 var testHandShake = function() {
 
-
     return lib2
         .handShake('http://localhost:8000')
         .tap(function(result) {
-            console.log("The state is here");
+            debug("HandShake done!");
         });
-/*
-     result = lib2.transmit(
-              state, 
-              "500 grammi di farina 00, 350 di burro, 1 uovo ed 1 tuorlo, 190 di zucchero. 180° per 20 minuti. Ecco del sano unicode: Ω ."
-              );
+};
 
-        return(result);
-    })
-    .tap(function(r) {
-        console.log("Done/Test!");
-    })
-    .delay(1000)
-    .tap(function() {
-        console.log("End!");
-    });
-*/
+var testTrasmit = function(state) {
 
+    return lib2
+        .transmit(state, 
+              "501 grammi di farina 00, 350 di burro, 1 uovo ed 1 tuorlo, 190 di zucchero. 180° per 20 minuti. Ecco del sano unicode: Ω .")
+        .tap(function(result) {
+            debug("Trasmit done!");
+        });
 };
 
 var testFetch = function() {
@@ -51,6 +43,20 @@ var testHref = function() {
 };
 
 // testHref();
-// testFetch();
-testHandShake();
+// a = testFetch(),
+
+(function() {
+    return testHandShake()
+        .then(function(state) {
+            return testTrasmit(state);
+        })
+        .then(function(result) {
+            debug("Completed?");
+        })
+        .catch(function(error) {
+            debug("Error! %s", error);
+            console.error(error);
+        });
+
+}).call(this);
 
