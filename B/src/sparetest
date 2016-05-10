@@ -15,9 +15,11 @@ var testHandShake = function() {
 
 var testTrasmit = function(state) {
 
+    var msg = "501 grammi di farina 00, 350 di burro, 1 uovo ed 1 tuorlo, 190 di zucchero. 180° per 20 minuti. Ecco del sano unicode: Ω .";
+
+        .tap(function(result) {
     return lib2
-        .transmit(state, 
-              "501 grammi di farina 00, 350 di burro, 1 uovo ed 1 tuorlo, 190 di zucchero. 180° per 20 minuti. Ecco del sano unicode: Ω .")
+        .transmit(state, msg)
         .tap(function(result) {
             debug("Trasmit done!");
         });

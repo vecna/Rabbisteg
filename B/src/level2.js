@@ -114,20 +114,26 @@ var handShake = function(site) {
 };
 
 var transmit = function(state, message) {
- 
-    var steganoMap = level1.computeSteganoMap(state, message);
 
-    debug("transmit");
-    return new Promise.all(steganoMap)
-        .then(function(results) {
-            debug("stegoMap resolved!");
-            console.log(JSON.stringify(results));
-        })
-        .tap(function(results) {
-            return process.env.VERBOSE && level1.functionVerbose(
-                'transmit', {message: message}, results
-            );
-        });
+    while(true) {
+
+      var steganoMap = level1.computeSteganoMap(state, message, 4);
+
+      debug("transmit");
+      return new Promise.all(steganoMap)
+          .then(function(results) {
+              debug("stegoMap resolved!");
+          })
+          .then(function(results) {
+              var updatedState = state;
+              _.each(results, function(state) {
+                  updatedState = appendState(updatedState, newState);
+              });
+              return process.env.VERBOSE && level1.functionVerbose(
+                  'transmit', {message: message}, results
+              );
+          });
+    }
 };
 
 module.exports = {

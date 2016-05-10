@@ -75,6 +75,10 @@ var fetchAndParse = function(url, referer, step) {
                  retVal
             );
         })
+        .catch(function(error) {
+            debug("Error!: %s", error);
+            retVal.status = 400;
+        })
         .return(retVal);
 };
 
@@ -116,7 +120,7 @@ var assemblyHref = function(url, href) {
     };
 };
 
-var computeSteganoMap = function(state, message) {
+var computeSteganoMap = function(state, msgSegment) {
  
     var clicks = [],
         partialmsg = message,
@@ -127,7 +131,6 @@ var computeSteganoMap = function(state, message) {
     debug("computeSteganoMap state %d links, msg %d bytes",
         _.size(state.links), _.size(message) );
 
-    debugger;
     for(seq = 0; seq < _.size(message); seq += 1) {
         var C = message.charCodeAt(seq),
             elem,
@@ -151,7 +154,7 @@ var computeSteganoMap = function(state, message) {
 };
 
 var waitAndFetch = function(clickInfo) {
-    debug("waitAndF %j", clickInfo);
+    debug("waitAndFetch %j", clickInfo);
     return fetchAndParse(clickInfo.href, clickInfo.referer, clickInfo.step);
 };
 
